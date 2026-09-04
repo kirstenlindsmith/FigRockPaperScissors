@@ -18,4 +18,4 @@ The user chooses which emoji fight and how many of each. Before a battle begins,
 
 ## Field armies of any size
 
-The user can field far more soldiers than fit comfortably on a phone, and still see every one of them. When a soldier is too small to make out, the user pinches to zoom and drags to move around the field — before a battle and while one runs. The limit is whatever a real phone can carry.
+The user can field far more soldiers than fit comfortably on a phone, and still see every one of them. When a soldier is too small to make out, the user pinches to zoom and drags to move around the field — before a battle and while one runs. Nothing a battle needs sits behind those gestures. The limit is whatever a real phone can carry.
