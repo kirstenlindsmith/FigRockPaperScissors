@@ -14,7 +14,7 @@ The user pauses a battle, resumes it, restarts it, abandons it, and accelerates 
 
 ## Make the armies their own
 
-The user chooses which emoji fight and how many of each. Before a battle begins, the user can take the field in hand — clearing it, erasing soldiers, painting new ones with a fingertip — drawing with the three emoji they chose, up to the numbers they set. The field they compose is the field they fight from. The app opens ready to fight with the setup last chosen.
+The user chooses which emoji fight, what each army is called, and how many of each. The three roles keep their names so a watcher can learn which beats which; when the app names one particular army, it uses the name the user gave it. Before a battle begins, the user can take the field in hand — clearing it, erasing soldiers, painting new ones with a fingertip — drawing with the three emoji they chose, up to the numbers they set. The field they compose is the field they fight from. The app opens ready to fight with the setup last chosen.
 
 ## Field armies of any size
 
