@@ -1,0 +1,7 @@
+.fig/
+.DS_Store
+.build/
+App/build/
+.swiftpm/
+xcuserdata/
+*.xcuserstate
