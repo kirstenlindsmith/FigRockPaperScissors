@@ -92,7 +92,8 @@ public final class Director {
             }
         }
         let counts = Kind.allCases.map { census[$0] }
-        let clock = Clock.tenths(battle.elapsed)
+        let reading = Clock.tenths(battle.elapsed)
+        let seconds = "\(reading) seconds"
         let confettiPoints = layout.field.width / 12
         let winner = census.victor.map { Int($0.rawValue) }
         let confetti = winner.map {
@@ -102,14 +103,15 @@ public final class Director {
         } ?? []
         var summary = ""
         for index in counts.indices { summary += "\(Words.names[index]) \(counts[index]), " }
-        summary += "\(clock) seconds"
+        summary += seconds
         return Frame(
             phase: phase, layout: layout, soldiers: soldiers, soldierPoints: field.ink,
-            confetti: confetti, confettiPoints: confettiPoints, counts: counts, clock: clock,
+            confetti: confetti, confettiPoints: confettiPoints, counts: counts,
+            clock: "\(reading) sec",
             banner: winner.map {
                 Banner(
-                    winner: "\(Words.glyphs[$0]) wins!", duration: "\(clock) seconds",
-                    spoken: "\(Words.names[$0]) wins after \(clock) seconds")
+                    winner: "\(Words.glyphs[$0]) wins!", duration: seconds,
+                    spoken: "\(Words.names[$0]) wins after \(seconds)")
             },
             summary: summary,
             primary: Words.primary(phase: phase, started: battle.elapsed > .zero),

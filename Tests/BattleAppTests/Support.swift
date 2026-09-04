@@ -51,21 +51,17 @@ final class Screen {
         director.frame(surface: surface, seconds: seconds)
     }
 
-    func run(_ frames: Int, watching: (Frame) -> Void = { _ in }) -> Frame {
+    func run(_ frames: Int) -> Frame {
         var last = frame(seconds: 0)
-        for _ in 0..<frames {
-            last = frame()
-            watching(last)
-        }
+        for _ in 0..<frames { last = frame() }
         return last
     }
 
-    func runToEnd(within frames: Int, watching: (Frame) -> Void = { _ in }) -> Frame {
+    func runToEnd(within frames: Int) -> Frame {
         var last = frame(seconds: 0)
         var left = frames
         while last.phase != .finished && left > 0 {
             last = frame()
-            watching(last)
             left -= 1
         }
         return last

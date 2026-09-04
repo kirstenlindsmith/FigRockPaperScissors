@@ -1,6 +1,8 @@
 public enum Phase: Equatable, Sendable { case landing, held, watching, finished }
 
-public enum Speed: Int, Equatable, Sendable { case normal = 1, double = 2 }
+public enum Speed: Int, CaseIterable, Equatable, Sendable {
+    case normal = 1, double = 2, quintuple = 5
+}
 
 public enum Intent: Equatable, Sendable {
     case newBattle, go, pause, home

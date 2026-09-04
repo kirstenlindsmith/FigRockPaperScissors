@@ -57,7 +57,7 @@ struct RootView: View {
         Text(reading)
             .font(.system(size: frame.layout.body, weight: .semibold).monospacedDigit())
             .lineLimit(1)
-            .minimumScaleFactor(0.5)
+            .minimumScaleFactor(0.3)
             .frame(maxWidth: .infinity)
     }
 

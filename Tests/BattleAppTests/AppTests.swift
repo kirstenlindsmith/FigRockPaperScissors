@@ -35,7 +35,7 @@ import Testing
         #expect(frame.phase == .held)
         #expect(frame.soldiers.count == 300)
         #expect(frame.counts == [100, 100, 100])
-        #expect(frame.clock == "0.0")
+        #expect(frame.clock == "0.0 sec")
         #expect(frame.primary.title == "GO")
         #expect(frame.primary.spoken == "Go")
         #expect(!frame.wantsFrames)
@@ -87,7 +87,7 @@ import Testing
         #expect(frame.primary.spoken == "Pause")
         #expect(frame.wantsFrames)
         frame = screen.run(30)
-        #expect(frame.clock != "0.0")
+        #expect(frame.clock != "0.0 sec")
         let stopped = screen.handle(.pause)
         #expect(stopped.phase == .held)
         #expect(stopped.primary.title == "RESUME")
@@ -107,13 +107,13 @@ import Testing
     func aFrameNeverHandsTheEngineMoreThanASliceOfTime(ask: Double) {
         let screen = Screen(seed: 4)
         _ = screen.handle(.newBattle)
-        _ = screen.handle(.speed(.double))
+        _ = screen.handle(.speed(.quintuple))
         _ = screen.handle(.go)
         for _ in 0..<3 {
             let before = screen.elapsed
             let frame = screen.frame(seconds: ask)
             let ticks = Int(((screen.elapsed - before) * 64).rounded())
-            #expect(ticks <= 7)
+            #expect(ticks <= 16)
             #expect(frame.soldiers.count == 300)
             if ask.isFinite && ask > 0 {
                 #expect(ticks > 0)
@@ -131,30 +131,35 @@ import Testing
         let screen = Screen(seed: 5)
         _ = screen.handle(.newBattle)
         var frame = screen.handle(.go)
-        #expect(frame.secondary.map(\.title) == ["1×", "2×"])
-        #expect(frame.secondary.map(\.spoken) == ["Normal speed", "Double speed"])
-        #expect(frame.secondary.map(\.intent) == [.speed(.normal), .speed(.double)])
-        #expect(frame.secondary.map(\.selected) == [true, false])
-        frame = screen.handle(.speed(.double))
-        #expect(frame.secondary.map(\.selected) == [false, true])
-        frame = screen.handle(.speed(.normal))
-        #expect(frame.secondary.map(\.selected) == [true, false])
+        #expect(frame.secondary.map(\.title) == ["1×", "2×", "5×"])
+        #expect(
+            frame.secondary.map(\.spoken)
+                == ["Normal speed", "Double speed", "Five times speed"])
+        #expect(
+            frame.secondary.map(\.intent) == [.speed(.normal), .speed(.double), .speed(.quintuple)])
+        #expect(frame.secondary.filter(\.selected).map(\.intent) == [.speed(.normal)])
+        for chosen in Speed.allCases {
+            frame = screen.handle(.speed(chosen))
+            #expect(frame.secondary.filter(\.selected).map(\.intent) == [.speed(chosen)])
+        }
     }
 
-    @Test func twiceIsExactlyTwice() {
+    @Test(arguments: Speed.allCases.filter { $0 != .normal })
+    func aSpeedIsExactlyItsMultipleOfTheRate(chosen: Speed) {
+        let watched = 40
         let slow = Screen(seed: 5)
         _ = slow.handle(.newBattle)
         _ = slow.handle(.go)
-        let single = slow.run(200)
+        let single = slow.run(watched * chosen.rawValue)
         let fast = Screen(seed: 5)
         _ = fast.handle(.newBattle)
-        _ = fast.handle(.speed(.double))
+        _ = fast.handle(.speed(chosen))
         _ = fast.handle(.go)
-        let double = fast.run(100)
-        #expect(single.soldiers == double.soldiers)
-        #expect(single.counts == double.counts)
-        #expect(single.clock == double.clock)
-        #expect(single.clock != "0.0")
+        let multiplied = fast.run(watched)
+        #expect(single.soldiers == multiplied.soldiers)
+        #expect(single.counts == multiplied.counts)
+        #expect(single.clock == multiplied.clock)
+        #expect(single.clock != "0.0 sec")
     }
 
     @Test func pausingChangesNoBattle() {
@@ -226,10 +231,12 @@ import Testing
         }
         let winner = try! #require(frame.counts.firstIndex(of: 300))
         let banner = try! #require(frame.banner)
+        let reading = Clock.tenths(try! #require(screen.battle).elapsed)
         #expect(banner.winner == "\(Words.glyphs[winner]) wins!")
-        #expect(banner.duration == "\(frame.clock) seconds")
-        #expect(banner.spoken == "\(Words.names[winner]) wins after \(frame.clock) seconds")
-        #expect(frame.summary.hasSuffix("\(frame.clock) seconds"))
+        #expect(frame.clock == "\(reading) sec")
+        #expect(banner.duration == "\(reading) seconds")
+        #expect(banner.spoken == "\(Words.names[winner]) wins after \(reading) seconds")
+        #expect(frame.summary.hasSuffix("\(reading) seconds"))
         #expect(frame.soldiers.allSatisfy { $0.glyph == winner })
         #expect(!frame.confetti.isEmpty)
         #expect(frame.confetti.allSatisfy { $0.glyph == winner })
@@ -367,7 +374,8 @@ import Testing
     }
 
     @Test func everyPhaseOffersAWayOn() {
-        let intents: [Intent] = [.newBattle, .go, .pause, .home, .speed(.double), .speed(.normal)]
+        let intents: [Intent] =
+            [.newBattle, .go, .pause, .home] + Speed.allCases.map { Intent.speed($0) }
         let surfaces = [
             device,
             Surface(width: 402, height: 778, unit: 3, reduceMotion: true),

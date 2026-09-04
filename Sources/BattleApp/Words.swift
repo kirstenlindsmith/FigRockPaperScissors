@@ -23,18 +23,23 @@ extension Words {
         }
     }
 
+    static func pace(_ speed: Speed) -> String {
+        switch speed {
+        case .normal: "Normal"
+        case .double: "Double"
+        case .quintuple: "Five times"
+        }
+    }
+
     static func secondary(phase: Phase, speed: Speed) -> [Control] {
         switch phase {
         case .landing: []
         case .held: [over, home]
-        case .watching: [
+        case .watching: Speed.allCases.map {
             Control(
-                title: "1\u{00D7}", spoken: "Normal speed", intent: .speed(.normal),
-                selected: speed == .normal),
-            Control(
-                title: "2\u{00D7}", spoken: "Double speed", intent: .speed(.double),
-                selected: speed == .double),
-        ]
+                title: "\($0.rawValue)\u{00D7}", spoken: "\(pace($0)) speed", intent: .speed($0),
+                selected: speed == $0)
+        }
         case .finished: [home]
         }
     }

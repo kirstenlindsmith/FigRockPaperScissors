@@ -23,6 +23,14 @@ struct Objects {
         return version.contains(".") ? version : version + ".0"
     }
 
+    static func level(_ fields: [String: Any], _ key: String) -> Double {
+        let written = word(fields, key)
+        if written.hasPrefix("0x") {
+            return Int(written.dropFirst(2), radix: 16).map { Double($0) / 255 } ?? .nan
+        }
+        return Double(written) ?? .nan
+    }
+
     static func names(in text: String) -> [String] {
         var found: [String] = []
         var run = ""
@@ -105,6 +113,36 @@ struct Picture {
         "RockPaperScissors.xcodeproj/project.pbxproj")
     static let scheme = folder.appendingPathComponent(
         "RockPaperScissors.xcodeproj/xcshareddata/xcschemes/RockPaperScissors.xcscheme")
+
+    static func opened() throws -> (Objects, [String: Any], [String: Any]) {
+        let text = try String(contentsOf: ProjectTests.project, encoding: .utf8)
+        let read = try PropertyListSerialization.propertyList(
+            from: Data(text.utf8), options: [], format: nil)
+        let file = try #require(read as? [String: Any])
+        let objects = Objects(all: try #require(file["objects"] as? [String: Any]))
+        let project = objects[file["rootObject"]]
+        return (objects, project, objects[Objects.list(project, "targets").first])
+    }
+
+    static func settings(_ objects: Objects, _ target: [String: Any]) -> [[String: Any]] {
+        Objects.list(objects[target["buildConfigurationList"]], "buildConfigurations")
+            .map { objects[$0]["buildSettings"] as? [String: Any] ?? [:] }
+    }
+
+    static func sources(_ objects: Objects, _ target: [String: Any]) -> URL {
+        let synchronised = objects[Objects.list(target, "fileSystemSynchronizedGroups").first]
+        return ProjectTests.folder.appendingPathComponent(Objects.word(synchronised, "path"))
+    }
+
+    static func sets(under sources: URL, named: String) -> [URL] {
+        let walker = FileManager.default.enumerator(atPath: sources.path)
+        return (walker?.compactMap { $0 as? String } ?? [])
+            .map { sources.appendingPathComponent($0) }
+            .filter {
+                $0.lastPathComponent == named
+                    && $0.deletingLastPathComponent().pathExtension == "xcassets"
+            }
+    }
 
     @Test func theProjectIsShapedAsXcodeWroteIt() throws {
         let text = try String(contentsOf: ProjectTests.project, encoding: .utf8)
@@ -190,9 +228,7 @@ struct Picture {
             let both = Objects.list(configurations, "buildConfigurations")
             #expect(both.map { Objects.word(objects[$0], "name") } == ["Debug", "Release"])
         }
-        let settings = Objects
-            .list(objects[target["buildConfigurationList"]], "buildConfigurations")
-            .map { objects[$0]["buildSettings"] as? [String: Any] ?? [:] }
+        let settings = ProjectTests.settings(objects, target)
         #expect(settings.count == 2)
         #expect((settings[0] as NSDictionary) == (settings[1] as NSDictionary))
         #expect(Objects.word(settings[0], "TARGETED_DEVICE_FAMILY") == "1")
@@ -206,8 +242,6 @@ struct Picture {
         let orientations = text.components(separatedBy: "UIInterfaceOrientation").dropFirst()
         #expect(orientations.count == 2)
         for orientation in orientations { #expect(orientation.hasPrefix("Portrait")) }
-        let walker = try #require(FileManager.default.enumerator(atPath: ProjectTests.folder.path))
-        for case let step as String in walker { #expect(!step.hasSuffix("Info.plist"), "\(step)") }
 
         let scheme = try String(contentsOf: ProjectTests.scheme, encoding: .utf8)
         let blueprints = scheme.components(separatedBy: "BlueprintIdentifier = \"").dropFirst()
@@ -219,31 +253,15 @@ struct Picture {
     }
 
     @Test func theHomeScreenIconIsWiredAndInAFormAppleAccepts() throws {
-        let text = try String(contentsOf: ProjectTests.project, encoding: .utf8)
-        let file = try #require(
-            PropertyListSerialization.propertyList(from: Data(text.utf8), options: [], format: nil)
-                as? [String: Any])
-        let objects = Objects(all: try #require(file["objects"] as? [String: Any]))
-        let target = objects[Objects.list(objects[file["rootObject"]], "targets").first]
-        let named = Objects.list(objects[target["buildConfigurationList"]], "buildConfigurations")
-            .map {
-                Objects.word(
-                    objects[$0]["buildSettings"] as? [String: Any] ?? [:],
-                    "ASSETCATALOG_COMPILER_APPICON_NAME")
-            }
+        let (objects, _, target) = try ProjectTests.opened()
+        let named = ProjectTests.settings(objects, target)
+            .map { Objects.word($0, "ASSETCATALOG_COMPILER_APPICON_NAME") }
         let icon = try #require(named.first)
         #expect(named == [icon, icon])
         #expect(!icon.isEmpty)
 
-        let synchronised = objects[Objects.list(target, "fileSystemSynchronizedGroups").first]
-        let sources = ProjectTests.folder.appendingPathComponent(Objects.word(synchronised, "path"))
-        let walker = try #require(FileManager.default.enumerator(atPath: sources.path))
-        let sets = walker.compactMap { $0 as? String }
-            .map { sources.appendingPathComponent($0) }
-            .filter {
-                $0.lastPathComponent == "\(icon).appiconset"
-                    && $0.deletingLastPathComponent().pathExtension == "xcassets"
-            }
+        let sets = ProjectTests.sets(
+            under: ProjectTests.sources(objects, target), named: "\(icon).appiconset")
         #expect(sets.count == 1)
         let set = try #require(sets.first)
         let root = set.deletingLastPathComponent().appendingPathComponent("Contents.json")
@@ -268,5 +286,57 @@ struct Picture {
         #expect(picture.depth == 8)
         #expect(![4, 6].contains(picture.colour))
         #expect(!picture.kinds.contains("tRNS"))
+    }
+
+    @Test func theLaunchScreenIsOpaqueBlackAndDeclaredInOnePlace() throws {
+        let (objects, project, target) = try ProjectTests.opened()
+        let configurations =
+            ProjectTests.settings(objects, project) + ProjectTests.settings(objects, target)
+        #expect(configurations.count == 4)
+        for configuration in configurations {
+            #expect(!configuration.keys.contains { $0.contains("UILaunchScreen") })
+        }
+        let settings = ProjectTests.settings(objects, target)
+        let declared = settings.map { Objects.word($0, "INFOPLIST_FILE") }
+        let named = try #require(declared.first)
+        #expect(declared == [named, named])
+        #expect(!named.isEmpty)
+        #expect(settings.map { Objects.word($0, "GENERATE_INFOPLIST_FILE") } == ["YES", "YES"])
+
+        let sources = ProjectTests.sources(objects, target)
+        let plist = ProjectTests.folder.appendingPathComponent(named).standardizedFileURL
+        #expect(!plist.path.hasPrefix(sources.standardizedFileURL.path + "/"))
+        let walker = try #require(FileManager.default.enumerator(atPath: ProjectTests.folder.path))
+        let plists = walker.compactMap { $0 as? String }.filter { $0.hasSuffix("Info.plist") }
+        #expect(plists == [named])
+
+        let shipped = try #require(
+            try PropertyListSerialization.propertyList(
+                from: try Data(contentsOf: plist), options: [], format: nil) as? [String: Any])
+        #expect(Set(shipped.keys) == ["UILaunchScreen"])
+        let screen = try #require(shipped["UILaunchScreen"] as? [String: Any])
+        #expect(Set(screen.keys) == ["UIColorName"])
+
+        let sets = ProjectTests.sets(
+            under: sources, named: "\(Objects.word(screen, "UIColorName")).colorset")
+        #expect(sets.count == 1)
+        let set = try #require(sets.first)
+        let entries = try #require(
+            try JSONSerialization.jsonObject(
+                with: try Data(contentsOf: set.appendingPathComponent("Contents.json")))
+                as? [String: Any])
+        let colours = try #require(entries["colors"] as? [[String: Any]])
+        let plain = colours.filter { $0["appearances"] == nil }
+        #expect(plain.count == 1)
+        #expect(Objects.word(try #require(plain.first), "idiom") == "universal")
+        for colour in colours {
+            let paint = try #require(colour["color"] as? [String: Any])
+            let components = try #require(paint["components"] as? [String: Any])
+            #expect(Objects.word(paint, "color-space") == "srgb")
+            #expect(Objects.level(components, "red") == 0)
+            #expect(Objects.level(components, "green") == 0)
+            #expect(Objects.level(components, "blue") == 0)
+            #expect(Objects.level(components, "alpha") == 1)
+        }
     }
 }
