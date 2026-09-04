@@ -438,8 +438,8 @@ optimisation level cannot change a battle.
 
 - **The user cannot say where a soldier stands.** The engine scatters the army over the whole field
   and mixes the kinds through it; nothing on the surface can move a soldier, and the user story's
-  "the user chooses … where every soldier stands" is unmet. What a setup can say is who fights, how
-  many, the screen's shape and a seed.
+  "the user can take the field in hand … painting new ones with a fingertip" is unmet. What a setup
+  can say is who fights, how many, the screen's shape and a seed.
 - **The app remembers nothing between launches.** A `Setup` encodes and decodes, so storing one is a
   few lines an app can write, but `Sources/BattleApp` does not: it draws a seed when it opens and
   steps it for every battle, and the counts and the emoji are what the engine and the words files
