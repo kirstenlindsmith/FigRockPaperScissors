@@ -65,7 +65,8 @@ battle.
 - **Draw a fresh seed for every battle.** A `Setup` is `Codable` and carries its seed, so an app that
   stores one and reopens it verbatim replays the same battle down to the bit. Store everything else
   and take a new seed each time the user starts one, or the rematch is a rerun. The app here stores
-  nothing between launches: it draws one seed when it opens and steps it for every battle.
+  the user's choices between launches and never the seed: it draws one when it opens and steps it for
+  every battle, so reopening the app is not a rerun.
 - **Choose the sizes it offers from a measurement on the device.** The ceiling is set by four
   things: what one core carries, how long a battle lasts, how much memory the battle holds, and
   whether a glyph is still legible. `docs/envelope.md` measures all four for this Linux box.
@@ -96,13 +97,19 @@ battle.
 
 ## The app
 
-`Sources/BattleApp` is the app's whole mind. It turns a screen rectangle and the seconds a frame
-lasted into everything the user sees — the bands and their heights, the projection of every soldier
-into screen points, the clock, the counts, the controls, the winner's banner and its confetti — and
-it is proven here by `swift test`, on Linux, against the engine's public surface only.
-`App/RockPaperScissors/` is the SwiftUI that only a Mac can compile: it holds a `Director`, hands it
-the rectangle and the length of the frame just drawn, and draws the value that comes back. Open
-`App/RockPaperScissors.xcodeproj`, choose an iPhone, and Run; the Run action is committed as Release.
+`Sources/BattleApp` is the app's whole mind. It turns a screen rectangle, the seconds a frame lasted,
+the characters the keyboard produced, the value the slider holds and the record the app was opened
+with into everything the user sees — the bands and their heights, the three armies' faces and names,
+the screen that chooses them, the projection of every soldier into screen points, the clock, the
+counts, the controls, the winner's banner and its confetti — and it is proven here by
+`swift test`, on Linux, against the engine's public surface only. `App/RockPaperScissors/` is the
+SwiftUI that only a Mac can compile: it holds a `Director`, hands it the rectangle, the length of the
+frame just drawn, the raw text and slider values its controls hold and the record it read back from
+the system, stores the record that comes out, and draws the rest. Which armies fight, what they are
+called, how many there are, every word the app says about them and every size it lays out come off
+the `Frame`; the paint — shapes, strokes, weights, colours and the shrink-to-fit — is the folder's
+own. Open `App/RockPaperScissors.xcodeproj`, choose an iPhone, and Run; the Run action is committed
+as Release.
 
 ## Building, testing, measuring
 
