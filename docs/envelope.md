@@ -509,7 +509,7 @@ optimisation level cannot change a battle.
   longer label, or a third control in that row, fails there. The advance is an assumption about a
   font this box does not have, not a measurement, and a wider face moves every boundary above down.
 - **The gear is the smallest control the app draws, and it is the only way to the config screen.**
-  It sits at the end of the readout band and is square at that band's own height, `44 × unit`: exactly
+  It sits in the readout band and is square at that band's own height, `44 × unit`: exactly
   the 44 points Apple asks for at the default text size, and more for every reader who asks for more.
   It is smaller for a reader who asks for less, and it has no floor of its own — the control rows have
   two (`primary ≥ 44`, `secondary ≥ 28`, both reached at `Layout.smallestUnit`) and the readout band

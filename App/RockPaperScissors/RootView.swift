@@ -57,10 +57,6 @@ struct RootView: View {
 
     private func readout(_ proxy: GeometryProxy) -> some View {
         HStack(spacing: 0) {
-            cell(frame.clock)
-            ForEach(frame.counts.indices, id: \.self) { index in
-                cell("\(frame.armies[index].glyph) \(frame.counts[index])")
-            }
             if let config = frame.config {
                 Button {
                     frame = director.handle(config.intent, surface: surface(proxy))
@@ -71,6 +67,10 @@ struct RootView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(config.spoken)
+            }
+            cell(frame.clock)
+            ForEach(frame.counts.indices, id: \.self) { index in
+                cell("\(frame.armies[index].glyph) \(frame.counts[index])")
             }
         }
         .frame(height: frame.layout.readout)
