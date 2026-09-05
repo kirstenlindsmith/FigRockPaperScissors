@@ -3,7 +3,7 @@ import BattleFixtures
 import Testing
 
 @Suite struct GivenFieldTests {
-    static let aspects: [Float] = [0, -1, .nan, .infinity, -.infinity, 1e-30, 1e30, 0.46, 2.2, 32]
+    static let aspects: [Float] = screens + [0, -1, .nan, .infinity, -.infinity]
 
     @Test func theBattleFieldsTheFieldItWasGiven() {
         let arena = arena(soldiers: 6, aspect: 2.2)

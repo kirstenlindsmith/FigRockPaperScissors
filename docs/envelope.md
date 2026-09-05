@@ -246,8 +246,8 @@ mean nearest neighbour — 0.932 and 1.024 bodies — sits inside the range whol
 (1.000–1.067). **The mean is therefore gated only in the direction a battle holds it**, and the
 no-solve control asserts the two that separate, which is what makes it evidence.
 
-At `t = 0` nothing overlaps at all: over the placement sweep below the closest pair is 1.026 to 1.859
-body diameters and no pair anywhere is inside a body.
+At `t = 0` a scattered army overlaps nowhere: over the placement sweep below the closest pair is
+1.026 to 1.859 body diameters and no pair anywhere is inside a body.
 
 ## Steering
 
