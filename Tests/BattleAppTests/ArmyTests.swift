@@ -286,6 +286,7 @@ private func verbatim(_ one: String, _ other: String) -> Bool {
         _ = screen.handle(.go)
         let frame = screen.runToEnd(within: 5_000)
         #expect(frame.phase == .finished)
+        #expect(frame.config == nil)
         #expect(frame.armies.map(\.glyph) == faces)
         #expect(frame.armies.map(\.name) == names)
         let winner = try #require(frame.counts.firstIndex(of: 3))

@@ -486,13 +486,16 @@ optimisation level cannot change a battle.
   binds from a few hundred soldiers and length from a few thousand. § Battles measures length at the
   app's own rectangle: the three hundred it opens with resolves in 9.25 to 17.50 seconds of battle
   time over three seeds, five hundred an army — a quarter of the way up the slider — in 43.91 to
-  76.56, and the even 6 000 at the top of it in 246.78 to 500.73, four to eight minutes of watching or
-  half that at the app's double speed, against a vision asking for a short spectacle. Cost and memory
-  do not bind at all: 0.41 MB retained at 6 000 soldiers (§ Cost), and one core carries 5.14× real
-  time there at the bound that table commits (§ The ceiling), against the 2× the app's own speed
-  control offers. This document's standing instruction — that the size ceiling the app advertises come
-  from one measurement on real hardware — is now owed against a specific number and has not been
-  taken.
+  76.56, and the even 6 000 at the top of it in 246.78 to 500.73, four to eight minutes of watching,
+  or a fifth of that at the fastest speed the app offers if a core can hold it, against a vision
+  asking for a short spectacle. **Cost binds there too, and only just.** The app's speed control now
+  reaches 5×, and one core carries **5.14×** at 6 000 soldiers at the bound § Cost commits — a margin
+  of 2.8 %, against a box whose own runs of one sitting spread further than that, and against a
+  document that calls the 42 % at 24 000 soldiers too thin to promise. So the top of the slider at the
+  top of the speed row is the first setting the app offers that this box is not measured to sustain.
+  Memory does not bind at all: 0.41 MB retained at 6 000 soldiers (§ Cost). This document's standing
+  instruction — that the size ceiling the app advertises come from one measurement on real hardware —
+  is now owed against two numbers, the size and the speed, and has not been taken.
 - **A control's label stops fitting its box about twice the default text size.** The longest label
   the app shows is "START OVER", ten characters at the 28-unit `body` size, in a row of two that
   gives each control `(width − 3·gap)/2` — 189 points on the 402-point device fixture. Taking a

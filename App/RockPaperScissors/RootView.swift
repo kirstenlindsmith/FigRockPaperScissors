@@ -64,6 +64,7 @@ struct RootView: View {
                     Image(systemName: "gearshape.fill")
                         .font(.system(size: frame.layout.body))
                         .frame(width: frame.layout.readout, height: frame.layout.readout)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(config.spoken)
