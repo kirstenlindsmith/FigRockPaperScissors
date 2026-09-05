@@ -377,6 +377,10 @@ import Testing
         }
     }
 
+    @Test func theReadoutBandIsApplesTapTargetOnTheDeviceFixture() {
+        #expect(Layout(device, diameter: Director.diameter).readout == AppTests.tapTarget)
+    }
+
     @Test func anUnusableSurfaceStagesNothingAndStillOffersAWayOn() {
         let unusable = [
             Surface.zero,

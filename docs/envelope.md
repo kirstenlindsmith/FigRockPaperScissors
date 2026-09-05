@@ -511,17 +511,23 @@ optimisation level cannot change a battle.
   row that holds it, at the default text size and below, on all seven widths the suite sweeps: a
   longer label, or a third control in that row, fails there. The advance is an assumption about a
   font this box does not have, not a measurement, and a wider face moves every boundary above down.
-- **The gear is the smallest control the app draws, and it is the only way to the config screen.**
-  It sits in the readout band and is square at that band's own height, `44 × unit`: exactly
-  the 44 points Apple asks for at the default text size, and more for every reader who asks for more.
-  It is smaller for a reader who asks for less, and it has no floor of its own — the control rows have
-  two (`primary ≥ 44`, `secondary ≥ 28`, both reached at `Layout.smallestUnit`) and the readout band
-  has none, so at that same smallest unit the gear is **22 points**. That unit is the floor `Layout`
-  clamps to and is below any Dynamic Type a phone offers — the smallest a phone asks for is about
-  0.8, which is 36 points — so the 22 is the suite's hostile corner rather than a reader's screen.
-  It is recorded because the number is not bounded by anything that would notice if it moved, and
-  because a control this one cannot be missed by a shaky hand: every other way off that screen leads
-  somewhere else.
+- **The only way to the config screen is the smallest control the app draws, and it falls under
+  Apple's tap target at text sizes and on screens a phone offers.** The gear sits in the readout
+  band, square at that band's own height, `44 × unit`, and `unit` is the text size the reader asked
+  for capped by what the screen's height leaves the field. So it is the 44 points Apple asks for at
+  the default text size only on a surface tall enough to grant that size — 620 points of height at
+  320 wide, falling to 513 at 440 — and above the default it grows with the text until that same
+  ceiling binds. On a tall surface a reader who asks for less gets less in proportion: about **36
+  points** at the smallest Dynamic Type a phone offers. A shorter surface caps it below 44 at every
+  Dynamic Type a phone offers: **33.6 points** at 320 × 568, the shape a 320-point-wide screen gives
+  under Display Zoom, and less again for whatever its safe area takes off that height. The floor is
+  **22 points** at `Layout.smallestUnit`, below any Dynamic Type a phone offers. The control rows
+  are taller — `primary` is 88 units and `secondary` 56, holding 44 and 28 at that same smallest
+  unit — so the gear is the first control to fall.
+  `theReadoutBandIsApplesTapTargetOnTheDeviceFixture` holds the band's own constant to 44 points;
+  the heights above are `Layout`'s arithmetic and are not gated. It is recorded because this is the
+  one control a shaky hand cannot afford to miss: every other way off that screen leads somewhere
+  else.
 - **A screen-reader user reaches about eleven of the two thousand counts.** The chooser's count
   slider is continuous — 1 to 2 000, no step and no adjustable action of its own — so VoiceOver moves
   it a tenth of its range a swipe: about ten swipes end to end, eleven counts, and every count
