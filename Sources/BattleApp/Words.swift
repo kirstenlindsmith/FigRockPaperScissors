@@ -19,13 +19,13 @@ extension Words {
         title: "PLAY AGAIN", spoken: "Play again", intent: .newBattle, selected: false)
     static let over = Control(
         title: "START OVER", spoken: "Start over", intent: .newBattle, selected: false)
-    static let armies = Control(
-        title: "ARMIES", spoken: "Armies", intent: .armies, selected: false)
+    static let config = Control(
+        title: "CONFIG", spoken: "Config", intent: .config, selected: false)
     static let home = Control(title: "HOME", spoken: "Home", intent: .home, selected: false)
 
     static func primary(phase: Phase, started: Bool) -> Control {
         switch phase {
-        case .landing, .choosing: play
+        case .landing, .config: play
         case .held: started ? resume : go
         case .watching: pause
         case .finished: again
@@ -42,7 +42,7 @@ extension Words {
 
     static func secondary(phase: Phase, speed: Speed) -> [Control] {
         switch phase {
-        case .landing, .choosing: []
+        case .landing, .config: []
         case .held: [over, home]
         case .watching: Speed.allCases.map {
             Control(

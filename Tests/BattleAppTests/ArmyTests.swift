@@ -53,7 +53,7 @@ private func verbatim(_ one: String, _ other: String) -> Bool {
             Surface(width: 402, height: 778, unit: 3, reduceMotion: true),
             .zero,
         ]
-        let cycle: [Intent] = [.newBattle, .go, .armies, .newBattle, .pause, .home]
+        let cycle: [Intent] = [.newBattle, .go, .config, .newBattle, .pause, .home]
         let asks = [refresh, 0, -1, .nan, 1e300, 10]
         let matrix = Screen(seed: 3)
         var step = 0
@@ -218,20 +218,21 @@ private func verbatim(_ one: String, _ other: String) -> Bool {
         }
     }
 
-    @Test func armiesOpensTheChooserAndPlayLeavesItOntoABattle() {
+    @Test func theGearOpensTheChooserAndPlayLeavesItOntoABattle() throws {
         let screen = Screen(seed: 10)
         let held = screen.handle(.newBattle)
         #expect(held.phase == .held)
-        #expect(held.secondary.count == 3)
-        let control = held.secondary[1]
-        #expect(control.title == "ARMIES")
-        #expect(control.spoken == "Armies")
+        #expect(held.secondary.map(\.title) == ["START OVER", "HOME"])
+        let control = try #require(held.config)
+        #expect(control.title == "CONFIG")
+        #expect(control.spoken == "Config")
+        #expect(control.intent == .config)
         weak var staged = screen.battle
         #expect(staged != nil)
 
         let chooser = screen.handle(control.intent)
         #expect(staged == nil)
-        #expect(chooser.phase == .choosing)
+        #expect(chooser.phase == .config)
         #expect(chooser.armies.count == 3)
         #expect(chooser.primary.title == "PLAY")
         #expect(chooser.primary.intent == .newBattle)
@@ -247,11 +248,11 @@ private func verbatim(_ one: String, _ other: String) -> Bool {
         #expect(left.phase == .held)
         #expect(left.counts == [100, 100, 100])
         #expect(left.soldiers.count == 300)
-        #expect(screen.handle(.armies).phase == .choosing)
+        #expect(screen.handle(.config).phase == .config)
         #expect(screen.handle(.home).phase == .landing)
 
         let unusable = Screen(seed: 11, surface: .zero)
-        #expect(unusable.handle(.armies).phase == .choosing)
+        #expect(unusable.handle(.config).phase == .config)
         #expect(unusable.handle(.newBattle).phase == .landing)
     }
 
@@ -290,7 +291,7 @@ private func verbatim(_ one: String, _ other: String) -> Bool {
         let winner = try #require(frame.counts.firstIndex(of: 3))
         let banner = try #require(frame.banner)
         #expect(banner.winner == "\(faces[winner]) wins!")
-        #expect(banner.spoken == "\(names[winner]) wins after \(frame.clock) seconds")
+        #expect(banner.spoken == "\(names[winner]) wins after \(banner.duration)")
         for index in 0..<3 {
             #expect(frame.summary.contains("\(names[index]) \(frame.counts[index])"))
         }
@@ -399,8 +400,8 @@ private func verbatim(_ one: String, _ other: String) -> Bool {
                 width: surface.width, height: surface.height - 400, unit: surface.unit,
                 reduceMotion: surface.reduceMotion)
             let screen = Screen(seed: 18, surface: shortened)
-            let chooser = screen.handle(.armies)
-            #expect(chooser.phase == .choosing)
+            let chooser = screen.handle(.config)
+            #expect(chooser.phase == .config)
             let layout = chooser.layout
             #expect(layout != Layout.zero, "\(shortened)")
             #expect(layout.primary >= AppTests.tapTarget, "\(shortened)")

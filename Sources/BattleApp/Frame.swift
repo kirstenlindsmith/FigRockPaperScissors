@@ -1,5 +1,5 @@
 public enum Phase: Equatable, Sendable, CaseIterable {
-    case landing, choosing, held, watching, finished
+    case landing, config, held, watching, finished
 }
 
 public enum Speed: Int, CaseIterable, Equatable, Sendable {
@@ -9,7 +9,7 @@ public enum Speed: Int, CaseIterable, Equatable, Sendable {
 public enum Intent: Equatable, Sendable {
     case newBattle, go, pause, home
     case speed(Speed)
-    case armies
+    case config
     case glyph(Int, String)
     case name(Int, String)
     case soldiers(Int, Double)
@@ -52,6 +52,7 @@ public struct Frame: Equatable, Sendable {
     public let clock: String
     public let banner: Banner?
     public let summary: String
+    public let config: Control?
     public let primary: Control
     public let secondary: [Control]
     public let wantsFrames: Bool

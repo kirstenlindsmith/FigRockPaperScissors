@@ -109,8 +109,8 @@ import Testing
         #expect(stopped.phase == .held)
         #expect(stopped.primary.title == "RESUME")
         #expect(stopped.primary.spoken == "Resume")
-        #expect(stopped.secondary.map(\.title) == ["START OVER", "ARMIES", "HOME"])
-        #expect(stopped.secondary.map(\.spoken) == ["Start over", "Armies", "Home"])
+        #expect(stopped.secondary.map(\.title) == ["START OVER", "HOME"])
+        #expect(stopped.secondary.map(\.spoken) == ["Start over", "Home"])
         #expect(!stopped.wantsFrames)
         let held = screen.run(30)
         #expect(held.clock == stopped.clock)
@@ -414,7 +414,7 @@ import Testing
 
     @Test func everyPhaseOffersAWayOn() {
         let intents: [Intent] =
-            [.newBattle, .go, .pause, .home, .armies] + Speed.allCases.map { Intent.speed($0) }
+            [.newBattle, .go, .pause, .home, .config] + Speed.allCases.map { Intent.speed($0) }
         let surfaces = [
             device,
             Surface(width: 402, height: 778, unit: 3, reduceMotion: true),
@@ -431,8 +431,10 @@ import Testing
                     var frame = screen.handle(intent)
                     #expect(!frame.primary.title.isEmpty)
                     #expect(frame.soldiers.count == 0 || frame.soldiers.count == 300)
+                    #expect((frame.config != nil) == (frame.phase == .held))
+                    #expect(frame.secondary.allSatisfy { $0.intent != .config })
                     switch frame.phase {
-                    case .landing, .choosing: #expect(frame.secondary.isEmpty)
+                    case .landing, .config: #expect(frame.secondary.isEmpty)
                     case .watching: #expect(frame.secondary.allSatisfy { $0.intent != .home })
                     case .held, .finished:
                         #expect(frame.secondary.contains { $0.intent == .home })

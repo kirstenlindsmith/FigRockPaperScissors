@@ -10,7 +10,7 @@ public final class Director {
     private var celebration: Duration = .zero
     private var seed: UInt64
     private var choices: Choices
-    private var choosing = false
+    private var configuring = false
 
     public init(seed: UInt64 = .random(in: UInt64.min...UInt64.max), record: [String]) {
         self.seed = seed
@@ -21,16 +21,16 @@ public final class Director {
         let layout = Layout(surface, diameter: Director.diameter)
         switch intent {
         case .newBattle:
-            choosing = false
+            configuring = false
             stage(layout)
         case .go: running = true
         case .pause: running = false
         case .home:
-            choosing = false
+            configuring = false
             battle = nil
         case .speed(let chosen): speed = chosen
-        case .armies:
-            choosing = true
+        case .config:
+            configuring = true
             battle = nil
         case .glyph(let index, let typed): choices.edit(at: index) { $0.typedGlyph = typed }
         case .name(let index, let typed): choices.edit(at: index) { $0.typedName = typed }
@@ -67,11 +67,11 @@ public final class Director {
     private func assemble(_ layout: Layout, reduceMotion: Bool) -> Frame {
         let armies = choices.all
         guard let battle else {
-            let phase: Phase = choosing ? .choosing : .landing
+            let phase: Phase = configuring ? .config : .landing
             return Frame(
                 phase: phase, layout: layout, armies: armies, soldiers: [], soldierPoints: 0,
                 confetti: [], confettiPoints: 0, counts: [], clock: "", banner: nil,
-                summary: "",
+                summary: "", config: nil,
                 primary: Words.primary(phase: phase, started: false),
                 secondary: Words.secondary(phase: phase, speed: speed),
                 wantsFrames: false)
@@ -118,6 +118,7 @@ public final class Director {
                     spoken: "\(armies[$0].name) wins after \(seconds)")
             },
             summary: summary,
+            config: phase == .held ? Words.config : nil,
             primary: Words.primary(phase: phase, started: battle.elapsed > .zero),
             secondary: Words.secondary(phase: phase, speed: speed),
             wantsFrames: phase == .watching || !confetti.isEmpty)

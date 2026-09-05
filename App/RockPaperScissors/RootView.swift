@@ -21,7 +21,7 @@ struct RootView: View {
     var body: some View {
         GeometryReader { proxy in
             VStack(spacing: frame.layout.gap) {
-                readout
+                readout(proxy)
                 field(proxy)
                 row(frame.secondary, height: frame.layout.secondary, proxy)
                 row([frame.primary], height: frame.layout.primary, proxy)
@@ -55,11 +55,22 @@ struct RootView: View {
             reduceMotion: reduceMotion)
     }
 
-    private var readout: some View {
+    private func readout(_ proxy: GeometryProxy) -> some View {
         HStack(spacing: 0) {
             cell(frame.clock)
             ForEach(frame.counts.indices, id: \.self) { index in
                 cell("\(frame.armies[index].glyph) \(frame.counts[index])")
+            }
+            if let config = frame.config {
+                Button {
+                    frame = director.handle(config.intent, surface: surface(proxy))
+                } label: {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: frame.layout.body))
+                        .frame(width: frame.layout.readout, height: frame.layout.readout)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(config.spoken)
             }
         }
         .frame(height: frame.layout.readout)
@@ -77,7 +88,7 @@ struct RootView: View {
         ZStack {
             if frame.phase == .landing {
                 title(proxy)
-            } else if frame.phase == .choosing {
+            } else if frame.phase == .config {
                 chooser(proxy)
             } else {
                 battlefield(proxy)

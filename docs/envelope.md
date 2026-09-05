@@ -493,19 +493,21 @@ optimisation level cannot change a battle.
   control offers. This document's standing instruction — that the size ceiling the app advertises come
   from one measurement on real hardware — is now owed against a specific number and has not been
   taken.
-- **A control's label stops fitting its box a little above the default text size.** The row of three
-  the battle-waiting screen now carries gives each control `(width − 4·gap)/3` — 123 points on the
-  402-point device fixture, where the row of two it replaced gave 189 — and the longest label the app
-  can show is "START OVER", ten characters at the 28-unit `body` size. Taking a character of the
-  app's black uppercase face as 0.62 of the text size wide, and allowing the shrink-to-fit the rows
-  carry, which stops at one half, label and box meet at `width/292` times the default text size:
-  1.09× on the narrowest screen the suite sweeps (320 points) and 1.37× on the device fixture,
-  against 1.62× and 2.03× for the row of two. Above that the label is truncated with an ellipsis
-  rather than clipped. `everyLabelFitsTheRowThatHoldsItAtTheDefaultTextSize` holds every label of
-  every phase inside the row that holds it, at the default text size and below, on all seven widths
-  the suite sweeps, with a tenth of margin at the narrowest: a longer label, or a fourth control in a
-  row, fails there. The advance is an assumption about a font this box does not have, not a
-  measurement, and a wider face moves every boundary above down.
+- **A control's label stops fitting its box about twice the default text size.** The longest label
+  the app shows is "START OVER", ten characters at the 28-unit `body` size, in a row of two that
+  gives each control `(width − 3·gap)/2` — 189 points on the 402-point device fixture. Taking a
+  character of the app's black uppercase face as 0.62 of the text size wide, and allowing the
+  shrink-to-fit the rows carry, which stops at one half, label and box meet at `width/198` times the
+  default text size: 1.62× on the narrowest screen the suite sweeps (320 points) and 2.03× on the
+  device fixture. Above that the label is truncated with an ellipsis rather than clipped. That
+  boundary is where it has always been: the control that reaches the config screen is a gear in the
+  readout band, not a third word in this row, so the row is the two controls it has always been. A
+  third would have moved the boundary to `width/292` — 1.09× and 1.37× — and put the squeeze on
+  exactly the reader who asked for large text.
+  `everyLabelFitsTheRowThatHoldsItAtTheDefaultTextSize` holds every label of every phase inside the
+  row that holds it, at the default text size and below, on all seven widths the suite sweeps: a
+  longer label, or a third control in that row, fails there. The advance is an assumption about a
+  font this box does not have, not a measurement, and a wider face moves every boundary above down.
 - **A screen-reader user reaches about eleven of the two thousand counts.** The chooser's count
   slider is continuous — 1 to 2 000, no step and no adjustable action of its own — so VoiceOver moves
   it a tenth of its range a swipe: about ten swipes end to end, eleven counts, and every count

@@ -108,7 +108,10 @@ frame just drawn, the raw text and slider values its controls hold and the recor
 the system, stores the record that comes out, and draws the rest. Which armies fight, what they are
 called, how many there are, every word the app says about them and every size it lays out come off
 the `Frame`; the paint — shapes, strokes, weights, colours and the shrink-to-fit — is the folder's
-own. A row of *n* controls is *n* slots and *n* + 1 gaps across the whole width: the folder spaces a
+own. `Frame.config` is where the two meet: the frame says a control is offered, what it is called and
+what it does, and the folder paints it as a gear rather than as its word, so what a screen reader
+hears still comes off the frame. A row of *n* controls is *n* slots and *n* + 1 gaps across the whole
+width: the folder spaces a
 row by `layout.gap`, pads both ends with the same gap, and `Layout.slot(_:)` divides what is left.
 `swift test` holds `slot` to that identity for every row the app draws, so the arithmetic cannot
 drift here; the folder spending its width some other way is the half of the identity only a Mac can
