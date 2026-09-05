@@ -58,7 +58,9 @@ column says the same without a clock: candidate visits per soldier stay between 
 that range, and a superlinear step cannot hide under a curve that flat.
 
 There is no longer a setup axis to this section. A setup is a screen shape, a seed and three counts;
-the counts change how long a battle lasts, not what a tick costs.
+the counts change how long a battle lasts, not what a tick costs. What does change a tick is a crowd
+the engine did not scatter: a battle handed a pile pays several times these visits a tick until it
+opens, and § Crowding counts them.
 
 ## Memory
 
@@ -73,7 +75,9 @@ engine's own storage is 0.02 MB.
 lattice and allocates nothing, so the excess over `storageBytes` that a placement's scratch would buy
 is not there: high-water minus floor is 1.6 MB against the 1.64 MB quoted at 24 000 soldiers, 4.4
 against 4.38 at 64 000, 17.5 against 17.52 at 256 000 and 68.4 against 68.38 at a million. An app
-that budgets `storageBytes` and the runtime's own floor will not be surprised.
+that budgets `storageBytes` and the runtime's own floor will not be surprised. The buffers are bought
+from the total and the screen alone, so the column above is what a battle handed a field retains too;
+the field itself is the caller's memory, beside the battle's until the caller lets it go.
 
 ## The ceiling
 
@@ -232,19 +236,47 @@ tick.
 | `n=6000 armies=even seed=1 passes=1 push=0` | 71 | 112 | 106 | **6.383 %** | 0.932 B | 0 |
 | `n=6000 armies=even seed=2 passes=1 push=0` | **124** | 204 | 115 | 4.267 % | 1.024 B | 0 |
 
-A cell holds half a soldier on average. Nowhere in a battle does the crowd pack more than six
-soldiers into one cell or put a single body inside half a body of another: that is the difference
-between a packing and a pool, and the two control rows are what a pool looks like — with the solve
-stopped after one pass, a cell holds up to a hundred and twenty-four soldiers and up to a sixteenth of
-the army sits inside half a body of a neighbour. The candidate cap holds the work bound even in the
-pool: its first-ring rows reach 204 soldiers and the worst soldier of any tick still visits 115
-candidates against the bound of 192.
+A cell holds half a soldier on average. Nowhere in a battle the engine scatters does the crowd pack
+more than six soldiers into one cell or put a single body inside half a body of another: that is the
+difference between a packing and a pool, and the two control rows are what a pool looks like — with
+the solve stopped after one pass, a cell holds up to a hundred and twenty-four soldiers and up to a
+sixteenth of the army sits inside half a body of a neighbour. The candidate cap holds the work bound
+even in the pool: its first-ring rows reach 204 soldiers and the worst soldier of any tick still
+visits 115 candidates against the bound of 192.
 
 Two of the three measures separate a packing from a pool and the third does not: against gates of 64
 soldiers a cell and 1 % of the army inside half a body, the pool reaches 124 and 6.383 %, while its
 mean nearest neighbour — 0.932 and 1.024 bodies — sits inside the range whole battles keep
 (1.000–1.067). **The mean is therefore gated only in the direction a battle holds it**, and the
 no-solve control asserts the two that separate, which is what makes it evidence.
+
+**A battle handed a pile is a pool until it opens.** `Battle(placing:aspect:)` fights the field as it
+stands, so the packing above is what its crowd settles into rather than what it starts from. The tool
+cannot hand a field to a battle, so the rows below come off the fixtures the suite builds and are
+measured as the suite measures them: all three gates at once, every twenty-five ticks, until nothing
+breaches again. What each test holds is the tick of that last breach; the three columns before it are the
+first sample, twenty-five ticks in, which is what the pile still is by then:
+
+| pile | densest cell | within half a body | mean nearest neighbour | last breach | gate |
+|---|---|---|---|---|---|
+| 300 on a point, 19.5∶9 — `aGivenPileOpensIntoTheCrowdABattleKeeps` | 17 | 68.0 % | 0.414 B | 125 | 250 |
+| 300 in a corner, 19.5∶9 — `aGivenCrowdInACornerOpensIntoTheCrowdABattleKeeps` | 130 | 91.3 % | 0.107 B | 750 | 1 000 |
+| 300 on a point, `aspect=1e-30` — `aGivenPileOpensOnEveryScreenTheSurfaceAdmits` | 134 | 95.7 % | 0.071 B | 1 550 | 2 000 |
+| 300 in a corner, `aspect=1e30` — `aGivenCrowdInACornerOpensOnEveryScreenTheSurfaceAdmits` | 108 | 98.3 % | 0.026 B | 4 950 | 6 000 |
+| 3 000 on a point, 19.5∶9 — `aGivenCrowdTenTimesDenserStillOpens` | 468 | 97.2 % | 0.049 B | 1 250 | 2 000 |
+| 3 000 in a corner, 19.5∶9 — `aGivenCrowdTenTimesDenserStillOpens` | 1 136 | 99.3 % | 0.007 B | 4 425 | 6 000 |
+
+The two screen rows are the slowest of the seven shapes the surface admits: on the five a device
+could have (0.36 to 32) the point pile is clean by 450 ticks and the corner pile by 1 750, and it is
+the two decades no screen has — where the arena is a strip — that take 1 550 and 4 950. Ten times the
+pile is ten times the ticks on a point (1 250 against 125) and six times in a corner (4 425 against
+750). None of them closes up again: each was sampled to the end of its battle — the corner pile of
+three thousand to 12 000 ticks — with no breach after the tick in the table.
+
+**A pile is dearer to fight than the crowd it opens into.** Over the four piles on a phone screen
+above, the dearest tick of an opening costs 74.6 to 153.7 candidate visits a soldier; the longest
+first-ring row is the whole pile; and the worst single soldier of a tick reads 142, 129, 192 and 192
+of the 192 the four windows allow.
 
 At `t = 0` a scattered army overlaps nowhere: over the placement sweep below the closest pair is
 1.026 to 1.859 body diameters and no pair anywhere is inside a body.
@@ -450,11 +482,12 @@ optimisation level cannot change a battle.
   steps it for every battle, and the counts and the emoji are what the engine and the words files
   fix. The user story's "the app opens ready to fight with the setup last chosen" is unmet, and
   nothing on the surface stands in the way of meeting it.
-- **A setup larger than the device can hold has nowhere to go.** `init` buys its storage once and
-  cannot fail gracefully: a count beyond memory takes the process down with the allocator's own
-  error. The engine's answer is to price the setup before it is built — `setup.storageBytes`,
-  measured against the process high-water above — and the app must ask. Counts beyond what the engine
-  can address normalise down instead, and reading the count back says what will be fielded.
+- **A battle larger than the device can hold has nowhere to go, whichever door it comes through.**
+  `init` buys its storage once and cannot fail gracefully: an army beyond memory takes the process
+  down with the allocator's own error. The engine's answer is to price it before it is built —
+  `setup.storageBytes`, measured against the process high-water above — and the app must ask. Counts
+  beyond what the engine can address normalise down instead, and reading the count back says what
+  will be fielded.
 - **The cost figures are the least reproducible numbers here.** Twenty runs a size in one sitting
   span 363–445 ns at 300 soldiers and 366–493 at 24 000; the committed bound is the worst pass median
   and the worst single run is beside it, but neither transfers to another box or another day, and a
@@ -499,15 +532,19 @@ optimisation level cannot change a battle.
   budget=76800` — three of four ended, in 94, 123 and 303 seconds of battle time, and the fourth was
   still running after 1 200 s with 10 782 / 2 699 / 36 519 soldiers alive. A battle that has not
   resolved is fully observable — a census with more than one kind — so the failure mode is a long
-  battle, never a wrong one, and 50 000 is already below real time on this box.
-- **Two of the caps that bound the work are never approached in a battle.** The densest cell reaches 6
-  of the 64 the gate allows and the first-ring row 13 of 48. Those bounds are still load-bearing — the
-  piles and the no-solve control in the suite drive both past their thresholds — but no battle in this
-  corpus is evidence for them. The displacement cap is not among them: a battle reaches it exactly.
+  battle, never a wrong one, and 50 000 is already below real time on this box. Size is not the only
+  axis: how long a battle handed a field runs is the field's own, and nothing here sweeps it. Of the
+  piles § Crowding opens, the three thousand on a point ended at 10 637 ticks and the three thousand
+  in a corner had not ended where the sampling stopped.
+- **Two of the caps that bound the work are never approached by a battle the engine scatters.** The
+  densest cell reaches 6 of the 64 the gate allows and the first-ring row 13 of 48, and no battle of
+  this corpus is evidence for either. A battle handed a pile is: it opens from past both of them
+  (§ Crowding), and that is where the two earn their keep, beside the no-solve control. The
+  displacement cap is not among them: a battle reaches it exactly.
 - **The endgame crowd is packed, not pooled, and packed is not perfect.** The closest pair of a whole
   battle falls to 0.513 bodies at 24 000 soldiers: two bodies come within half a diameter for a tick
   and are pushed apart again. What the guarantee bounds is pooling — the share of the army inside half
-  a body, 0.000 % in every battle measured against 6.383 % with the solve stopped.
+  a body, 0.000 % in every battle the engine scatters against 6.383 % with the solve stopped.
 - **Beyond the exact reach the target is not the nearest, and nothing bounds its direction.** The
   distance is bounded — 1.234× the true nearest over 24 live instants — but where two enemies stand at
   nearly the same distance in different directions the field can take either, and the heading error

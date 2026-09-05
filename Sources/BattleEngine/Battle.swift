@@ -71,7 +71,7 @@ public final class Battle {
         recount()
     }
 
-    init(aspect: Float, soldiers count: Int, kernel: Kernel) {
+    private init(aspect: Float, soldiers count: Int, kernel: Kernel) {
         self.kernel = kernel
         let n = min(count, Tuning.largestField)
         soldiers = n

@@ -86,11 +86,14 @@ battle.
   things: what one core carries, how long a battle lasts, how much memory the battle holds, and
   whether a glyph is still legible. `docs/envelope.md` measures all four for this Linux box.
   Determinism transfers to a phone by construction; cost and memory do not.
-- **Ask what a battle costs before building it.** `setup.storageBytes` is the memory a battle
-  retains, counted by the code that buys it, and placing the armies buys nothing on top of it, so it
-  is the whole price; `docs/envelope.md` measures it against the process high-water. A setup larger
-  than the device can hold has nowhere to go: `init` fails to allocate and the process dies, which is
-  the one failure the engine cannot report, so the app must not ask for it.
+- **Ask what a battle costs before building it, at either door.** `setup.storageBytes` is the memory
+  a battle retains, counted by the code that buys it, and neither scattering the armies nor copying
+  in a given field buys anything on top of it, so it is the whole price; `docs/envelope.md` measures
+  it against the process high-water. A field is priced the same way: the `Setup` of the same total on
+  the same screen quotes what the engine will buy for it, and the field the app is holding sits
+  beside that price until `init` returns. A battle larger than the device can hold has nowhere to go:
+  `init` fails to allocate and the process dies, which is the one failure the engine cannot report,
+  so the app must not ask for it.
 - **Keep calling `advance` after the battle ends.** It freezes; `elapsed` is then the battle's own
   length, and the display link can run through the celebration.
 
@@ -99,8 +102,10 @@ battle.
 - **It fields no more soldiers per army than keeps a cell index inside `Int32`.** The grid buys at
   most four cells a soldier and three armies share it, so the cap is `Int32.max / 12` an army —
   1.79 × 10⁸ each, 5.37 × 10⁸ in all. A larger count normalises down to that, and reading the count
-  back says what the engine will field. Every count the surface accepts is arithmetically defined at
-  every size; whether it is affordable is `storageBytes` and the device's business.
+  back says what the engine will field. A given field is held to the same 5.37 × 10⁸ however its
+  kinds are split, and a longer one is fielded up to that and no further: the soldiers past it never
+  stand. Every count the surface accepts is arithmetically defined at every size; whether it is
+  affordable is `storageBytes` and the device's business.
 - **It takes a single delivery of at most `Int64.max` seconds** — 292 billion years — and treats
   anything longer as that. Every `Duration` the caller can build is therefore accepted, and time
   already run is never un-run: a negative delivery contributes nothing.
@@ -135,6 +140,6 @@ rules, the bounds, the piles that bind the caps, and the gates at the sizes that
 The release run repeats all of it under `-O`, which is what proves that optimisation level cannot
 change a battle: the golden digests are asserted at both levels. The scale run takes the same
 guarantees where they are hardest — six thousand and twenty-four thousand soldiers, whole battles,
-the crowd controls — and takes minutes. The last is the tool behind `docs/envelope.md`; its modes are
-`battle`, `bench`, `spacing`, `steering`, `rings`, `geometry` and `invariance`, and that document
-names the run behind every figure it measures, to the seed.
+the crowd controls, the handed piles on every screen shape — and takes minutes. The last is the tool
+behind `docs/envelope.md`; its modes are `battle`, `bench`, `spacing`, `steering`, `rings`, `geometry`
+and `invariance`, and that document names the run behind every figure it measures, to the seed.
