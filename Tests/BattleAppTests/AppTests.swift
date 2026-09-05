@@ -61,11 +61,11 @@ import Testing
         #expect(Words.glyphs[Int(Kind.rock.rawValue)] == "🪨")
         #expect(Words.glyphs[Int(Kind.paper.rawValue)] == "📄")
         #expect(Words.glyphs[Int(Kind.scissors.rawValue)] == "✂️")
-        #expect(Words.names[Int(Kind.rock.rawValue)] == "Rock")
-        #expect(Words.names[Int(Kind.paper.rawValue)] == "Paper")
-        #expect(Words.names[Int(Kind.scissors.rawValue)] == "Scissors")
+        #expect(Words.roles[Int(Kind.rock.rawValue)] == "Rock")
+        #expect(Words.roles[Int(Kind.paper.rawValue)] == "Paper")
+        #expect(Words.roles[Int(Kind.scissors.rawValue)] == "Scissors")
         #expect(Words.glyphs.count == Kind.allCases.count)
-        #expect(Words.names.count == Kind.allCases.count)
+        #expect(Words.roles.count == Kind.allCases.count)
     }
 
     @Test func armiesDrawnUpDoNotMove() {
@@ -92,8 +92,8 @@ import Testing
         #expect(stopped.phase == .held)
         #expect(stopped.primary.title == "RESUME")
         #expect(stopped.primary.spoken == "Resume")
-        #expect(stopped.secondary.map(\.title) == ["START OVER", "HOME"])
-        #expect(stopped.secondary.map(\.spoken) == ["Start over", "Home"])
+        #expect(stopped.secondary.map(\.title) == ["START OVER", "ARMIES", "HOME"])
+        #expect(stopped.secondary.map(\.spoken) == ["Start over", "Armies", "Home"])
         #expect(!stopped.wantsFrames)
         let held = screen.run(30)
         #expect(held.clock == stopped.clock)
@@ -226,16 +226,16 @@ import Testing
             #expect(tally == frame.counts)
             #expect(tally.reduce(0, +) == 300)
             for index in tally.indices {
-                #expect(frame.summary.contains("\(Words.names[index]) \(tally[index])"))
+                #expect(frame.summary.contains("\(frame.armies[index].name) \(tally[index])"))
             }
         }
         let winner = try! #require(frame.counts.firstIndex(of: 300))
         let banner = try! #require(frame.banner)
         let reading = Clock.tenths(try! #require(screen.battle).elapsed)
-        #expect(banner.winner == "\(Words.glyphs[winner]) wins!")
+        #expect(banner.winner == "\(frame.armies[winner].glyph) wins!")
         #expect(frame.clock == "\(reading) sec")
         #expect(banner.duration == "\(reading) seconds")
-        #expect(banner.spoken == "\(Words.names[winner]) wins after \(reading) seconds")
+        #expect(banner.spoken == "\(frame.armies[winner].name) wins after \(reading) seconds")
         #expect(frame.summary.hasSuffix("\(reading) seconds"))
         #expect(frame.soldiers.allSatisfy { $0.glyph == winner })
         #expect(!frame.confetti.isEmpty)
@@ -299,7 +299,7 @@ import Testing
         for surface in screens {
             let layout = Layout(surface, diameter: Director.diameter)
             let band = layout.field
-            let setup = Director.setup(aspect: band.width / band.height)
+            let setup = Choices.opening.setup(aspect: band.width / band.height, seed: 0)
             let arena = Size(width: Double(setup.arena.x), height: Double(setup.arena.y))
             let diameter = Double(setup.soldierDiameter)
             let field = Field(arena: arena, diameter: diameter, size: band)
@@ -375,7 +375,7 @@ import Testing
 
     @Test func everyPhaseOffersAWayOn() {
         let intents: [Intent] =
-            [.newBattle, .go, .pause, .home] + Speed.allCases.map { Intent.speed($0) }
+            [.newBattle, .go, .pause, .home, .armies] + Speed.allCases.map { Intent.speed($0) }
         let surfaces = [
             device,
             Surface(width: 402, height: 778, unit: 3, reduceMotion: true),
@@ -393,7 +393,7 @@ import Testing
                     #expect(!frame.primary.title.isEmpty)
                     #expect(frame.soldiers.count == 0 || frame.soldiers.count == 300)
                     switch frame.phase {
-                    case .landing: #expect(frame.secondary.isEmpty)
+                    case .landing, .choosing: #expect(frame.secondary.isEmpty)
                     case .watching: #expect(frame.secondary.allSatisfy { $0.intent != .home })
                     case .held, .finished:
                         #expect(frame.secondary.contains { $0.intent == .home })

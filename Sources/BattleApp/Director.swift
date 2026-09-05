@@ -2,27 +2,39 @@ import BattleEngine
 
 public final class Director {
     static let slice = 0.05
-    static let armySize = 100
-    static let diameter = Double(Director.setup(aspect: 1).soldierDiameter)
+    static let diameter = Choices.opening.diameter
 
     var battle: Battle?
     private var running = false
     private var speed: Speed = .normal
     private var celebration: Duration = .zero
     private var seed: UInt64
+    private var choices: Choices
+    private var choosing = false
 
-    public init(seed: UInt64 = .random(in: UInt64.min...UInt64.max)) {
+    public init(seed: UInt64 = .random(in: UInt64.min...UInt64.max), record: [String]) {
         self.seed = seed
+        choices = Choices(record: record)
     }
 
     public func handle(_ intent: Intent, surface: Surface) -> Frame {
         let layout = Layout(surface, diameter: Director.diameter)
         switch intent {
-        case .newBattle: stage(layout)
+        case .newBattle:
+            choosing = false
+            stage(layout)
         case .go: running = true
         case .pause: running = false
-        case .home: battle = nil
+        case .home:
+            choosing = false
+            battle = nil
         case .speed(let chosen): speed = chosen
+        case .armies:
+            choosing = true
+            battle = nil
+        case .glyph(let index, let typed): choices.edit(at: index) { $0.typedGlyph = typed }
+        case .name(let index, let typed): choices.edit(at: index) { $0.typedName = typed }
+        case .soldiers(let index, let value): choices.edit(at: index) { $0.resize(value) }
         }
         return assemble(layout, reduceMotion: surface.reduceMotion)
     }
@@ -33,20 +45,9 @@ public final class Director {
         return assemble(layout, reduceMotion: surface.reduceMotion)
     }
 
-    static func setup(aspect: Double) -> Setup {
-        Setup(
-            aspect: Float(aspect),
-            seed: 0,
-            rock: Director.armySize,
-            paper: Director.armySize,
-            scissors: Director.armySize
-        )
-    }
-
     private func stage(_ layout: Layout) {
         guard layout.field.width > 0, layout.field.height > 0 else { return }
-        var made = Director.setup(aspect: layout.field.width / layout.field.height)
-        made.seed = seed
+        let made = choices.setup(aspect: layout.field.width / layout.field.height, seed: seed)
         seed &+= 1
         battle = Battle(made)
         running = false
@@ -64,13 +65,15 @@ public final class Director {
     }
 
     private func assemble(_ layout: Layout, reduceMotion: Bool) -> Frame {
+        let armies = choices.all
         guard let battle else {
+            let phase: Phase = choosing ? .choosing : .landing
             return Frame(
-                phase: .landing, layout: layout, soldiers: [], soldierPoints: 0,
+                phase: phase, layout: layout, armies: armies, soldiers: [], soldierPoints: 0,
                 confetti: [], confettiPoints: 0, counts: [], clock: "", banner: nil,
                 summary: "",
-                primary: Words.primary(phase: .landing, started: false),
-                secondary: Words.secondary(phase: .landing, speed: speed),
+                primary: Words.primary(phase: phase, started: false),
+                secondary: Words.secondary(phase: phase, speed: speed),
                 wantsFrames: false)
         }
         let census = battle.census
@@ -102,16 +105,17 @@ public final class Director {
                 points: confettiPoints, reduceMotion: reduceMotion)
         } ?? []
         var summary = ""
-        for index in counts.indices { summary += "\(Words.names[index]) \(counts[index]), " }
+        for index in counts.indices { summary += "\(armies[index].name) \(counts[index]), " }
         summary += seconds
         return Frame(
-            phase: phase, layout: layout, soldiers: soldiers, soldierPoints: field.ink,
+            phase: phase, layout: layout, armies: armies, soldiers: soldiers,
+            soldierPoints: field.ink,
             confetti: confetti, confettiPoints: confettiPoints, counts: counts,
             clock: "\(reading) sec",
             banner: winner.map {
                 Banner(
-                    winner: "\(Words.glyphs[$0]) wins!", duration: seconds,
-                    spoken: "\(Words.names[$0]) wins after \(seconds)")
+                    winner: "\(armies[$0].glyph) wins!", duration: seconds,
+                    spoken: "\(armies[$0].name) wins after \(seconds)")
             },
             summary: summary,
             primary: Words.primary(phase: phase, started: battle.elapsed > .zero),

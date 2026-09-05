@@ -14,6 +14,22 @@ let screens = [320.0, 360, 375, 390, 402, 430, 440].flatMap { width in
     }
 }
 
+let drafts = [
+    "", " ", "\u{00A0}", "\n", "a", "ab", "abc ", " ab ", "🐶🐱", "🐶 ", "👨‍👩‍👧‍👦", "🇯🇵", "👍🏽", "✂️", "1️⃣",
+    "🏳️‍🌈", "\u{200D}", "e\u{0301}", " \u{0301}", String(repeating: "x", count: 500),
+]
+
+let reachable = [
+    [100, 100, 100],
+    [1, 1, 1],
+    [2000, 2000, 2000],
+    [2000, 1, 1],
+    [1, 2000, 1],
+    [1, 1, 2000],
+    [2000, 2000, 1],
+    [777, 13, 1],
+]
+
 func spots(_ soldiers: [Dot]) -> [SIMD2<Double>] { soldiers.map { SIMD2($0.x, $0.y) } }
 
 func bunched(_ spots: [SIMD2<Double>], into field: Size) -> [SIMD2<Double>] {
@@ -37,8 +53,8 @@ final class Screen {
     let director: Director
     var surface: Surface
 
-    init(seed: UInt64, surface: Surface = device) {
-        director = Director(seed: seed)
+    init(seed: UInt64, record: [String] = [], surface: Surface = device) {
+        director = Director(seed: seed, record: record)
         self.surface = surface
     }
 
@@ -46,6 +62,10 @@ final class Screen {
     var elapsed: Double { battle.map { Clock.seconds($0.elapsed) } ?? 0 }
 
     func handle(_ intent: Intent) -> Frame { director.handle(intent, surface: surface) }
+
+    func choose(_ counts: [Int]) {
+        for index in counts.indices { _ = handle(.soldiers(index, Double(counts[index]))) }
+    }
 
     func frame(seconds: Double = refresh) -> Frame {
         director.frame(surface: surface, seconds: seconds)

@@ -1,6 +1,13 @@
-public enum Words {
-    public static let glyphs = ["\u{1FAA8}", "\u{1F4C4}", "\u{2702}\u{FE0F}"]
-    public static let names = ["Rock", "Paper", "Scissors"]
+enum Words {
+    static let glyphs = ["\u{1FAA8}", "\u{1F4C4}", "\u{2702}\u{FE0F}"]
+    static let roles = ["Rock", "Paper", "Scissors"]
+
+    static func glyphLabel(_ role: String) -> String { "\(role) emoji" }
+    static func nameLabel(_ role: String) -> String { "\(role) name" }
+    static func soldiersLabel(_ role: String) -> String { "\(role) soldiers" }
+    static func introduction(_ name: String, plays role: String) -> String {
+        "\(name) plays \(role)."
+    }
 }
 
 extension Words {
@@ -12,11 +19,13 @@ extension Words {
         title: "PLAY AGAIN", spoken: "Play again", intent: .newBattle, selected: false)
     static let over = Control(
         title: "START OVER", spoken: "Start over", intent: .newBattle, selected: false)
+    static let armies = Control(
+        title: "ARMIES", spoken: "Armies", intent: .armies, selected: false)
     static let home = Control(title: "HOME", spoken: "Home", intent: .home, selected: false)
 
     static func primary(phase: Phase, started: Bool) -> Control {
         switch phase {
-        case .landing: play
+        case .landing, .choosing: play
         case .held: started ? resume : go
         case .watching: pause
         case .finished: again
@@ -33,7 +42,7 @@ extension Words {
 
     static func secondary(phase: Phase, speed: Speed) -> [Control] {
         switch phase {
-        case .landing: []
+        case .landing, .choosing: []
         case .held: [over, home]
         case .watching: Speed.allCases.map {
             Control(

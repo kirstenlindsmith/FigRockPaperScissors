@@ -62,6 +62,10 @@ public struct Layout: Equatable, Sendable {
         field = Size(width: width, height: remaining)
     }
 
+    public func slot(_ controls: Int) -> Double {
+        (field.width - Double(controls + 1) * gap) / Double(controls)
+    }
+
     static func legibleHeight(width: Double, diameter: Double) -> Double {
         guard width > legibleInk, diameter > 0 else { return 0 }
         let widthBinds = diameter * (width - legibleInk) / legibleInk

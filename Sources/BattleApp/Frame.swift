@@ -1,4 +1,4 @@
-public enum Phase: Equatable, Sendable { case landing, held, watching, finished }
+public enum Phase: Equatable, Sendable { case landing, choosing, held, watching, finished }
 
 public enum Speed: Int, CaseIterable, Equatable, Sendable {
     case normal = 1, double = 2, quintuple = 5
@@ -7,6 +7,10 @@ public enum Speed: Int, CaseIterable, Equatable, Sendable {
 public enum Intent: Equatable, Sendable {
     case newBattle, go, pause, home
     case speed(Speed)
+    case armies
+    case glyph(Int, String)
+    case name(Int, String)
+    case soldiers(Int, Double)
 }
 
 public struct Dot: Equatable, Sendable {
@@ -37,6 +41,7 @@ public struct Banner: Equatable, Sendable {
 public struct Frame: Equatable, Sendable {
     public let phase: Phase
     public let layout: Layout
+    public let armies: [Army]
     public let soldiers: [Dot]
     public let soldierPoints: Double
     public let confetti: [Dot]
@@ -49,5 +54,8 @@ public struct Frame: Equatable, Sendable {
     public let secondary: [Control]
     public let wantsFrames: Bool
 
-    public static let opening = Director(seed: 0).frame(surface: .zero, seconds: 0)
+    public var legend: String { armies.map(\.introduction).joined(separator: " ") }
+    public var record: [String] { armies.flatMap(\.record) }
+
+    public static let opening = Director(seed: 0, record: []).frame(surface: .zero, seconds: 0)
 }
