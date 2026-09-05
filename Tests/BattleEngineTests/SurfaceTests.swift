@@ -68,11 +68,11 @@ import Testing
         #expect(battle.elapsed == elapsed)
     }
 
-    @Test func victorIsTheOneKindLeft() {
+    @Test func victorIsTheOneKindLeft() throws {
         let battle = Battle(Fixtures.setup(.even, soldiers: 30, seed: 5))
         #expect(battle.census.victor == nil)
         #expect(battle.runToEnd(within: 40_000))
-        let victor = try! #require(battle.census.victor)
+        let victor = try #require(battle.census.victor)
         #expect(battle.census[victor] == 30)
         #expect(battle.census.total == 30)
     }

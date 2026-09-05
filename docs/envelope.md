@@ -493,6 +493,26 @@ optimisation level cannot change a battle.
   control offers. This document's standing instruction — that the size ceiling the app advertises come
   from one measurement on real hardware — is now owed against a specific number and has not been
   taken.
+- **A control's label stops fitting its box a little above the default text size.** The row of three
+  the battle-waiting screen now carries gives each control `(width − 4·gap)/3` — 123 points on the
+  402-point device fixture, where the row of two it replaced gave 189 — and the longest label the app
+  can show is "START OVER", ten characters at the 28-unit `body` size. Taking a character of the
+  app's black uppercase face as 0.62 of the text size wide, and allowing the shrink-to-fit the rows
+  carry, which stops at one half, label and box meet at `width/292` times the default text size:
+  1.09× on the narrowest screen the suite sweeps (320 points) and 1.37× on the device fixture,
+  against 1.62× and 2.03× for the row of two. Above that the label is truncated with an ellipsis
+  rather than clipped. `everyLabelFitsTheRowThatHoldsItAtTheDefaultTextSize` holds every label of
+  every phase inside the row that holds it, at the default text size and below, on all seven widths
+  the suite sweeps, with a tenth of margin at the narrowest: a longer label, or a fourth control in a
+  row, fails there. The advance is an assumption about a font this box does not have, not a
+  measurement, and a wider face moves every boundary above down.
+- **A screen-reader user reaches about eleven of the two thousand counts.** The chooser's count
+  slider is continuous — 1 to 2 000, no step and no adjustable action of its own — so VoiceOver moves
+  it a tenth of its range a swipe: about ten swipes end to end, eleven counts, and every count
+  between them out of reach without sighted dragging. That is deliberate. Every one of the two
+  thousand is a real battle, so a step of one is two thousand swipes and any coarser step hides sizes
+  the app offers and the slider still shows. The count is spoken on every change, so what is reached
+  is never in doubt; which of them can be reached is.
 - **A setup larger than the device can hold has nowhere to go.** `init` buys its storage once and
   cannot fail gracefully: a count beyond memory takes the process down with the allocator's own
   error. The engine's answer is to price the setup before it is built — `setup.storageBytes`,

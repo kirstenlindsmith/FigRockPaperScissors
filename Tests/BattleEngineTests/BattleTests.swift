@@ -7,7 +7,7 @@ import Testing
     static let sizes = [3, 6, 15, 30, 60]
 
     @Test(arguments: Armies.allCases)
-    func everyBattleEndsWithOneKindStanding(armies: Armies) {
+    func everyBattleEndsWithOneKindStanding(armies: Armies) throws {
         for soldiers in BattleTests.sizes {
             for seed in UInt64(1)...12 {
                 let setup = Fixtures.setup(armies, soldiers: soldiers, seed: seed)
@@ -17,7 +17,7 @@ import Testing
                 #expect(battle.runToEnd(within: budget))
                 #expect(battle.census.isOver)
                 if contested {
-                    let victor = try! #require(battle.census.victor)
+                    let victor = try #require(battle.census.victor)
                     #expect(battle.census[victor] == setup.count)
                     #expect(battle.tickCount > 0)
                 } else {

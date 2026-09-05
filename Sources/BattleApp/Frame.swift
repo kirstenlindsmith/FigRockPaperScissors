@@ -1,4 +1,6 @@
-public enum Phase: Equatable, Sendable { case landing, choosing, held, watching, finished }
+public enum Phase: Equatable, Sendable, CaseIterable {
+    case landing, choosing, held, watching, finished
+}
 
 public enum Speed: Int, CaseIterable, Equatable, Sendable {
     case normal = 1, double = 2, quintuple = 5
@@ -56,6 +58,4 @@ public struct Frame: Equatable, Sendable {
 
     public var legend: String { armies.map(\.introduction).joined(separator: " ") }
     public var record: [String] { armies.flatMap(\.record) }
-
-    public static let opening = Director(seed: 0, record: []).frame(surface: .zero, seconds: 0)
 }

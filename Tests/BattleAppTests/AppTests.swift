@@ -6,6 +6,22 @@ import Testing
 @Suite struct AppTests {
     static let tapTarget = 44.0
     static let tapFloor = 28.0
+    static let labelAdvance = 0.62
+    static let labelShrink = 0.5
+    static let chooserDrafts = 2
+
+    static let labelled: [(title: String, controls: Int)] = Phase.allCases.flatMap {
+        phase -> [(title: String, controls: Int)] in
+        Speed.allCases.flatMap { speed -> [(title: String, controls: Int)] in
+            let secondary = Words.secondary(phase: phase, speed: speed)
+            let primary: [(title: String, controls: Int)] = [true, false].map {
+                (Words.primary(phase: phase, started: $0).title, 1)
+            }
+            return primary + secondary.map { ($0.title, secondary.count) }
+        }
+    }
+
+    static let rows = Set(labelled.map(\.controls)).union([chooserDrafts]).sorted()
 
     @Test func theAppOpensOnALandingScreen() {
         let screen = Screen(seed: 1)
@@ -22,16 +38,17 @@ import Testing
         #expect(frame.primary.spoken == "Play")
         #expect(frame.primary.intent == .newBattle)
         #expect(frame.layout.field.height > 0)
-        #expect(Frame.opening.phase == .landing)
-        #expect(Frame.opening.primary.intent == .newBattle)
-        #expect(Frame.opening.layout == Layout.zero)
-        #expect(!Frame.opening.wantsFrames)
+        let unmeasured = Screen(seed: 1, surface: .zero).frame(seconds: 0)
+        #expect(unmeasured.phase == .landing)
+        #expect(unmeasured.primary.intent == .newBattle)
+        #expect(unmeasured.layout == Layout.zero)
+        #expect(!unmeasured.wantsFrames)
     }
 
-    @Test func oneTapDrawsUpThreeHundredSoldiersOverTheWholeField() {
+    @Test func oneTapDrawsUpThreeHundredSoldiersOverTheWholeField() throws {
         let screen = Screen(seed: 1)
         let frame = screen.handle(.newBattle)
-        let staged = try! #require(screen.battle)
+        let staged = try #require(screen.battle)
         #expect(frame.phase == .held)
         #expect(frame.soldiers.count == 300)
         #expect(frame.counts == [100, 100, 100])
@@ -205,7 +222,7 @@ import Testing
         #expect(frame.primary.title == "PLAY")
     }
 
-    @Test func aWholeBattleIsDrawnInsideTheFieldAndEndsCelebrated() {
+    @Test func aWholeBattleIsDrawnInsideTheFieldAndEndsCelebrated() throws {
         let screen = Screen(seed: pinned)
         _ = screen.handle(.newBattle)
         _ = screen.handle(.speed(.double))
@@ -229,9 +246,9 @@ import Testing
                 #expect(frame.summary.contains("\(frame.armies[index].name) \(tally[index])"))
             }
         }
-        let winner = try! #require(frame.counts.firstIndex(of: 300))
-        let banner = try! #require(frame.banner)
-        let reading = Clock.tenths(try! #require(screen.battle).elapsed)
+        let winner = try #require(frame.counts.firstIndex(of: 300))
+        let banner = try #require(frame.banner)
+        let reading = Clock.tenths(try #require(screen.battle).elapsed)
         #expect(banner.winner == "\(frame.armies[winner].glyph) wins!")
         #expect(frame.clock == "\(reading) sec")
         #expect(banner.duration == "\(reading) seconds")
@@ -320,6 +337,28 @@ import Testing
             let layout = Layout(surface, diameter: Director.diameter)
             #expect(layout.art > 0)
             #expect(3 * layout.art + 2 * layout.gap <= layout.field.height)
+        }
+    }
+
+    @Test func aRowSpendsEverySlotAndEveryGapItHoldsAcrossTheWholeWidth() {
+        for surface in screens {
+            let layout = Layout(surface, diameter: Director.diameter)
+            for controls in AppTests.rows {
+                let spent =
+                    Double(controls) * layout.slot(controls) + Double(controls + 1) * layout.gap
+                #expect(abs(spent - layout.field.width) < 1e-9, "\(controls) \(surface)")
+            }
+        }
+    }
+
+    @Test func everyLabelFitsTheRowThatHoldsItAtTheDefaultTextSize() {
+        for surface in screens where surface.unit <= 1 {
+            let layout = Layout(surface, diameter: Director.diameter)
+            for (title, controls) in AppTests.labelled {
+                let ink = Double(title.count) * AppTests.labelAdvance * layout.body
+                #expect(
+                    ink * AppTests.labelShrink <= layout.slot(controls), "\(title) \(surface)")
+            }
         }
     }
 

@@ -80,9 +80,9 @@ import Testing
         #expect(blind.census[.paper] == 1)
     }
 
-    @Test func aCrowdSeenFromOutsideItsOwnGroundCostsNoMoreThanTheBound() {
+    @Test func aCrowdSeenFromOutsideItsOwnGroundCostsNoMoreThanTheBound() throws {
         let battle = pileSeenFrom(spacingsAway: 3, flock: 800)
-        let watcher = try! #require(battle.steeringSamples(stride: 1).first { $0.kind == .paper })
+        let watcher = try #require(battle.steeringSamples(stride: 1).first { $0.kind == .paper })
         #expect(watcher.readEverything)
         #expect(watcher.searchedPreyDistance.isFinite)
         #expect(battle.densestCell() > Gate.visitsForOneSoldier)
@@ -112,7 +112,7 @@ import Testing
     }
 
     @Test(arguments: Armies.allCases)
-    func theTargetASoldierStepsTowardIsTheNearestItShouldSteerAt(armies: Armies) {
+    func theTargetASoldierStepsTowardIsTheNearestItShouldSteerAt(armies: Armies) throws {
         let soldiers = 600
         let scale = Scale(soldiers: soldiers)
         let battle = Battle(Fixtures.setup(armies, soldiers: soldiers, seed: 4))
@@ -145,8 +145,8 @@ import Testing
                     of: wanted, from: before[i], along: heading, in: before, kinds: kinds
                 )
                 let truth = Steering.nearest(of: wanted, from: before[i], in: before, kinds: kinds)
-                let aimedAt = try! #require(aimed)
-                let nearest = try! #require(truth)
+                let aimedAt = try #require(aimed)
+                let nearest = try #require(truth)
                 judged += 1
                 if aimedAt <= nearest * (1 + 1e-5) { exact += 1 }
                 #expect(Double(aimedAt / nearest) <= Gate.targetDistanceOverNearest)

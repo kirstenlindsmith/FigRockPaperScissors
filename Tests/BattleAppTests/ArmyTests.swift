@@ -158,12 +158,12 @@ private func verbatim(_ one: String, _ other: String) -> Bool {
         #expect(reached.max() == Army.largest)
     }
 
-    @Test func everyChoiceTheScreenCanReachStagesARealBattle() {
+    @Test func everyChoiceTheScreenCanReachStagesARealBattle() throws {
         for counts in reachable {
             let screen = Screen(seed: 7)
             screen.choose(counts)
             var frame = screen.handle(.newBattle)
-            let staged = try! #require(screen.battle)
+            let staged = try #require(screen.battle)
             for kind in Kind.allCases {
                 #expect(staged.setup[kind] == counts[Int(kind.rawValue)], "\(counts)")
             }
@@ -272,7 +272,7 @@ private func verbatim(_ one: String, _ other: String) -> Bool {
         #expect(renamed.legend == "Boulder plays Rock. Boulder plays Paper. Shears plays Scissors.")
     }
 
-    @Test func everyPlaceThatNamesAnArmyUsesTheChosenName() {
+    @Test func everyPlaceThatNamesAnArmyUsesTheChosenName() throws {
         let names = ["Boulder", "Sheet", "Shears"]
         let faces = ["🐶", "🐱", "🐭"]
         let screen = Screen(seed: 13)
@@ -287,8 +287,8 @@ private func verbatim(_ one: String, _ other: String) -> Bool {
         #expect(frame.phase == .finished)
         #expect(frame.armies.map(\.glyph) == faces)
         #expect(frame.armies.map(\.name) == names)
-        let winner = try! #require(frame.counts.firstIndex(of: 3))
-        let banner = try! #require(frame.banner)
+        let winner = try #require(frame.counts.firstIndex(of: 3))
+        let banner = try #require(frame.banner)
         #expect(banner.winner == "\(faces[winner]) wins!")
         #expect(banner.spoken == "\(names[winner]) wins after \(frame.clock) seconds")
         for index in 0..<3 {
@@ -369,7 +369,9 @@ private func verbatim(_ one: String, _ other: String) -> Bool {
         let record = screen.frame(seconds: 0).record
         #expect(record == ["🐶 ", "", "1", "", "Sheet", "1", "", "", "1"])
         #expect(zip(record, ["🐶 ", "", "1", "", "Sheet", "1", "", "", "1"]).allSatisfy(verbatim))
-        #expect(Frame.opening.record == ["", "", "100", "", "", "100", "", "", "100"])
+        #expect(
+            Screen(seed: 19).frame(seconds: 0).record
+                == ["", "", "100", "", "", "100", "", "", "100"])
         #expect(Screen(seed: 17, record: record).frame(seconds: 0).record == record)
 
         #expect(screen.handle(.newBattle).record == record)
