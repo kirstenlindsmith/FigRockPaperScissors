@@ -65,10 +65,12 @@ private func verbatim(_ one: String, _ other: String) -> Bool {
                     let before = matrix.handle(cycle[step % cycle.count]).armies
                     _ = matrix.handle(.glyph(index, draft))
                     _ = matrix.handle(.name(index, draft))
+                    let resized = matrix.handle(.soldiers(index, 7))
                     let staged = matrix.handle(.soldiers(index, Double(Army.opening)))
                     if (0..<3).contains(index) {
                         #expect(verbatim(staged.armies[index].typedGlyph, draft))
                         #expect(verbatim(staged.armies[index].typedName, draft))
+                        #expect(resized.armies[index].soldiers == 7)
                         #expect(staged.armies[index].soldiers == Army.opening)
                         for other in 0..<3 where other != index {
                             #expect(staged.armies[other] == before[other])
@@ -245,6 +247,8 @@ private func verbatim(_ one: String, _ other: String) -> Bool {
         #expect(left.phase == .held)
         #expect(left.counts == [100, 100, 100])
         #expect(left.soldiers.count == 300)
+        #expect(screen.handle(.armies).phase == .choosing)
+        #expect(screen.handle(.home).phase == .landing)
 
         let unusable = Screen(seed: 11, surface: .zero)
         #expect(unusable.handle(.armies).phase == .choosing)
@@ -260,6 +264,11 @@ private func verbatim(_ one: String, _ other: String) -> Bool {
         _ = screen.handle(.name(1, "Boulder"))
         let renamed = screen.handle(.name(2, "Shears"))
         #expect(renamed.armies.map(\.role) == ["Rock", "Paper", "Scissors"])
+        #expect(renamed.armies.map(\.glyphLabel) == ["Rock emoji", "Paper emoji", "Scissors emoji"])
+        #expect(renamed.armies.map(\.nameLabel) == ["Rock name", "Paper name", "Scissors name"])
+        #expect(
+            renamed.armies.map(\.soldiersLabel)
+                == ["Rock soldiers", "Paper soldiers", "Scissors soldiers"])
         #expect(renamed.legend == "Boulder plays Rock. Boulder plays Paper. Shears plays Scissors.")
     }
 
