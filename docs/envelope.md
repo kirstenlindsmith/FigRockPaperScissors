@@ -194,18 +194,23 @@ takes 0.58. Either way the battles are shorter than an even three-way — a medi
 everywhere: over every cell of at least eight runs, the longest battle of a cell is at least **2.99×**
 the shortest, and every such cell is won by at least two kinds.
 
-**What the app can now be asked for is the user's, so the corners are measured.** The counts are
-chosen on the app's own screen now, and the mixes that reaches are outside the two the matrix above
-measures. The runs are taken at the rectangle the app stages on — the field band of its own device
-fixture, 402 × 558, an aspect of **0.7204** — and not at the tool's default shape,
-because the shape is part of the battle: `battle n=300 armies=even seed=1|2|3 aspect=0.7204` gives
-709 / 592 / 1 120 ticks against the 1 044 / 815 / 1 084 the same three seeds give at the default this
-section quotes above. `battle-measure battle counts=<a,b,c> seed=1|2|3 aspect=0.7204` at the corners
-of what the app offers, twenty-one runs, **all twenty-one resolved** (seconds of battle time):
+**What the app can now be asked for is the user's, so it is measured.** The counts are chosen on the
+app's own screen now, and what that reaches — any three counts up to two thousand — is wider than the
+two mixes the matrix above measures. The runs are taken at the rectangle the app stages on — the field
+band of its own device fixture, 402 × 558, an aspect of **0.7204** — and not at the tool's default
+shape, because the shape is part of the battle: `battle n=300 armies=even seed=1|2|3 aspect=0.7204`
+gives 709 / 592 / 1 120 ticks against the 1 044 / 815 / 1 084 the same three seeds give at the default
+this section quotes above. `battle-measure battle counts=<a,b,c> seed=1|2|3 aspect=0.7204` at the corners
+of what the app offers and up the even middle, thirty-three runs, **all thirty-three resolved**
+(seconds of battle time):
 
 | counts | soldiers | seed 1 | seed 2 | seed 3 |
 |---|---|---|---|---|
 | 1/1/1 | 3 | 0.41 | 0.39 | 0.19 |
+| 100/100/100 | 300 | 11.08 | 9.25 | 17.50 |
+| 500/500/500 | 1 500 | 76.56 | 71.48 | 43.91 |
+| 1000/1000/1000 | 3 000 | 164.84 | 205.63 | 49.91 |
+| 1500/1500/1500 | 4 500 | 122.53 | 119.45 | 56.70 |
 | 2000/1/1 | 2 002 | 11.58 | 11.14 | 11.27 |
 | 1/2000/1 | 2 002 | 18.30 | 16.33 | 8.61 |
 | 1/1/2000 | 2 002 | 10.73 | 10.06 | 16.14 |
@@ -216,10 +221,12 @@ of what the app offers, twenty-one runs, **all twenty-one resolved** (seconds of
 In all fifteen runs with a lone soldier in them the field ends in that soldier's kind: at 2 002 by
 converting the one big army it hunts, one hand-change a soldier and no surge; at 4 001 the same, after
 the army it hunts has taken the third, at 1.5 hand-changes and one surge. That is the 13/1/1 finding
-above at a hundred and more times the size. The even 6 000 is the only corner that is not short, and
-it is the longest thing the app can be asked to do: seed 1 runs 32 047 ticks against the tool's
-default budget of 38 400, so a longer seed is cut off unresolved and needs `budget=` raised, as the
-runs at 24 000 do.
+above at a hundred and more times the size. The corners do not bound length: every one of them but the
+even 6 000 is under twenty-six seconds, while all four even mixes from five hundred an army upward run
+longer than the longest lopsided corner. Nor does length climb with the count — 3 000 even outlasts
+4 500 even at two of these three seeds. The longest of the thirty-three is the even 6 000, whose seed 1
+runs 32 047 ticks against the tool's default budget of 38 400, so a longer seed is cut off unresolved
+and needs `budget=` raised, as the runs at 24 000 do.
 
 ## Bounds and motion
 
@@ -472,15 +479,17 @@ optimisation level cannot change a battle.
   ten points are guaranteed there and nowhere above: `theFieldIsNeverDistorted` holds the drawn
   soldier at ten points or more on every one of the 147 screens and text sizes it sweeps, at that army
   and at no other. A glyph goes as `1/√N` (§ The ceiling), so at the top of what the app now offers,
-  twenty times that army, the same soldier is a little over two points across. Above three hundred soldiers
-  the vision's promise to stay legible for people with limited vision rests on the pinch-to-zoom the
-  user story asks for and nothing has yet built. Two of § The ceiling's four limits now bind on what
-  the app advertises rather than on what an app might, and in that order: legibility binds from a few
-  hundred soldiers, length only at the very top, where the even 6 000 of § Battles takes 246.78 to
-  500.73 seconds of battle time over three seeds — four to eight minutes of watching, or half that at
-  the app's double speed — while every other choice it can reach is under twenty-six seconds. Cost and
-  memory do not bind at all: 0.41 MB retained at 6 000 soldiers (§ Cost), and one core carries 5.14×
-  real time there at the bound that table commits (§ The ceiling), against the 2× the app's own speed
+  twenty times that army, the same soldier is a little over two points across. Above three hundred
+  soldiers the vision's promise to stay legible for people with limited vision rests on the
+  pinch-to-zoom the user story asks for and nothing has yet built. Two of § The ceiling's four limits
+  now bind on what the app advertises rather than on what an app might, and in that order: legibility
+  binds from a few hundred soldiers and length from a few thousand. § Battles measures length at the
+  app's own rectangle: the three hundred it opens with resolves in 9.25 to 17.50 seconds of battle
+  time over three seeds, five hundred an army — a quarter of the way up the slider — in 43.91 to
+  76.56, and the even 6 000 at the top of it in 246.78 to 500.73, four to eight minutes of watching or
+  half that at the app's double speed, against a vision asking for a short spectacle. Cost and memory
+  do not bind at all: 0.41 MB retained at 6 000 soldiers (§ Cost), and one core carries 5.14× real
+  time there at the bound that table commits (§ The ceiling), against the 2× the app's own speed
   control offers. This document's standing instruction — that the size ceiling the app advertises come
   from one measurement on real hardware — is now owed against a specific number and has not been
   taken.
