@@ -207,11 +207,12 @@ inside the arena inset by half a body, and for a displacement over the cap.
 - The worst single-tick displacement is **the cap itself** — 1.0000002 of it, at `n=24000
   armies=lopsided seed=3`, where the mop-up crowd pushes a body exactly as far as a tick may carry it.
   A displacement read back from two stored positions carries the rounding of the addition that placed
-  them — under two of the arena's ulps, by the width of a `Float` there — so the tool reports the
-  excess in those ulps rather than judging it, and the suite allows four. The worst measured is 0.00
-  of them. The clamp is therefore load-bearing in a battle and not only in the suite's
-  `nothingComesOutOfAPileFasterThanTheCap`, which puts three and twenty-four soldiers on one point and
-  asserts both that nothing exceeds the cap and that something reaches it.
+  them — under two ulps of the arena's longer side, by the width of a `Float` there — so the tool
+  reports the excess in ulps of that side rather than judging it, and the suite allows four. The
+  worst measured is 0.00 of them. The clamp is therefore load-bearing in a battle and not only in the
+  suite's `aBattleFoughtFromAGivenFieldStaysInsideTheArenaAndNeverLeaps`, which fights a field of wild
+  coordinates and two piles of sixty on each of seven screen shapes and asserts both that nothing
+  exceeds the cap and that something reaches it.
 - The worst single soldier of any tick of those battles visited 78 candidates against the bound of
   192 — four candidate windows of 48, one for each row of the first ring and one for everything
   beyond it — and the longest first-ring row anywhere was 13 against the cap of 48.
@@ -379,9 +380,11 @@ relabelling of one field rather than a second field.
   largest — **no block is ever empty**, and the fullest and emptiest sit within 4.15 sampling noises of
   their share, the spread a uniformly random subset is expected to show over that many blocks. At 60
   soldiers the arena cuts into two or three blocks and at 3 into one, so those configurations carry no
-  coverage evidence and are not counted here. The same army bunched into the middle of the field, hand
-  placed through the instrumentation initialiser, leaves blocks empty at 300 and 1 500 soldiers on
-  every aspect, and that is the control the everyday suite runs beside this measurement.
+  coverage evidence and are not counted here. The same army bunched into the middle tenth of the
+  field and handed to the engine through the door an app uses leaves **8 to 14 of the 12 to 15 blocks
+  empty at 300 soldiers and 48 to 74 of the 49 to 75 at 1 500**, on every one of the seven aspects
+  the suite sweeps, against none empty for the scattered army at any of them; that is the control the
+  everyday suite runs beside this measurement (`theArmyCoversTheFieldWhereAClumpOfItCouldNot`).
 - the kinds are mixed throughout: the share of soldiers whose nearest neighbour is another kind is
   **58.3–100 %** at equal counts and **23.7–46.0 %** where the split is 80/10/10, against the
   census-implied `1 − Σpₖ²` of 66.7 % and 34.0 %. Every one of the 90 sits inside the four sampling
@@ -393,8 +396,9 @@ relabelling of one field rather than a second field.
 - the arena's area is 1 to five decimals everywhere; measured in bodies it runs from 2.0 across (the
   thin clamp) to 65 536 long (the long clamp), and both clamps bind exactly where they are meant to.
 
-Building a battle is placement, which is all the randomness there is: `geometry n=1000|100000|1000000
-armies=even seed=1` takes **0.13 ms, 8.5 ms and 83 ms**, and 81 ms at 10⁶ on the widest arena the
+Building a battle from a setup is placement, which is all the randomness there is — a battle built
+from a given field reaches none of it: `geometry n=1000|100000|1000000 armies=even seed=1` takes
+**0.13 ms, 8.5 ms and 83 ms**, and 81 ms at 10⁶ on the widest arena the
 surface admits (`aspect=1e30`). Those are the same kind of bound as § Cost's, and they move with the
 box in the same way.
 
@@ -436,10 +440,11 @@ optimisation level cannot change a battle.
 
 ## Shortfalls
 
-- **The user cannot say where a soldier stands.** The engine scatters the army over the whole field
-  and mixes the kinds through it; nothing on the surface can move a soldier, and the user story's
-  "the user can take the field in hand … painting new ones with a fingertip" is unmet. What a setup
-  can say is who fights, how many, the screen's shape and a seed.
+- **The user cannot paint a field.** The engine takes one — `Battle(placing:aspect:)` fights the
+  soldiers it is handed, wherever they stand — but `Sources/BattleApp` stages one battle of three
+  hundred scattered soldiers and offers no way to place, erase or move one, so the user story's "the
+  user can take the field in hand … painting new ones with a fingertip" is unmet, and nothing on the
+  surface stands in the way of meeting it.
 - **The app remembers nothing between launches.** A `Setup` encodes and decodes, so storing one is a
   few lines an app can write, but `Sources/BattleApp` does not: it draws a seed when it opens and
   steps it for every battle, and the counts and the emoji are what the engine and the words files
@@ -466,8 +471,9 @@ optimisation level cannot change a battle.
     setup would need more than four cells per soldier; the lattice doubles its spacing if it would
     offer more than five sites per soldier, and shrinks it if it would offer fewer than one; a soldier
     for whom no site was left stands in the middle of the arena; a position left of the arena is read
-    as the first cell; and a count is capped so that a cell index stays inside `Int32`. Over the 3 172
-    placements scanned above the realised figures are 1.00–2.04 cells and 1.00–3.00 sites per soldier,
+    as the first cell; and a count is capped so that a cell index stays inside `Int32`, whether it
+    arrives as a setup's counts or as the length of a given field. Over the 3 172 placements scanned
+    above the realised figures are 1.00–2.04 cells and 1.00–3.00 sites per soldier,
     and the suite puts every soldier of every placement it makes inside the arena inset by half a
     body. Between them they are what makes the storage `Setup.storageBytes` quotes a bound rather than
     an expectation, what keeps every soldier inside the arena, and what keeps a cell index inside

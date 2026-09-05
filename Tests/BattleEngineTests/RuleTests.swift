@@ -35,14 +35,9 @@ import Testing
     }
 
     @Test func aSoldierPulledEquallyChases() {
-        let scale = Scale(soldiers: 3)
-        let middle = SIMD2<Float>(0.7, 0.34)
-        let reach = 2 * scale.spacing
-        let battle = hand([
-            (middle, .rock),
-            (middle + SIMD2(reach, 0), .scissors),
-            (middle - SIMD2(reach, 0), .paper),
-        ])
+        let battle = chooser(prey: SIMD2(2, 0), predator: SIMD2(-2, 0))
+        let scale = battle.scale
+        let middle = battle.arena * 0.5
         battle.tick()
         let moved = battle.positionsNow[0] - middle
         #expect(moved.x > 0)
@@ -51,13 +46,9 @@ import Testing
     }
 
     @Test func aSoldierFleesWhatIsNearerThanItsPrey() {
-        let scale = Scale(soldiers: 3)
-        let middle = SIMD2<Float>(0.7, 0.34)
-        let battle = hand([
-            (middle, .rock),
-            (middle + SIMD2(2.4 * scale.spacing, 0), .scissors),
-            (middle - SIMD2(2 * scale.spacing, 0), .paper),
-        ])
+        let battle = chooser(prey: SIMD2(2.4, 0), predator: SIMD2(-2, 0))
+        let scale = battle.scale
+        let middle = battle.arena * 0.5
         battle.tick()
         let moved = battle.positionsNow[0] - middle
         #expect(moved.x > 0)
@@ -95,7 +86,7 @@ import Testing
             (point, .rock),
             (point, .rock),
             (point + SIMD2(0.5, 0.2), .paper),
-            (point + SIMD2(0.6, 0.25), .scissors),
+            (point + SIMD2(0.6, 0.2), .scissors),
         ])
         #expect(spread(battle) == 0)
         for _ in 0..<40 {
@@ -122,12 +113,12 @@ import Testing
                 (subject + SIMD2(1.1 * scale.spacing, 0.2 * scale.spacing), .scissors),
                 (subject + SIMD2(-0.9 * scale.spacing, 0.4 * scale.spacing), .paper),
                 (spot, .rock),
-                (SIMD2(1.35, 0.62), .paper),
-                (SIMD2(1.3, 0.05), .scissors),
+                (SIMD2(1.35, 0.55), .paper),
+                (SIMD2(1.3, 0.15), .scissors),
             ])
         }
-        let near = battle(withDistantFriendAt: SIMD2(0.05, 0.62))
-        let far = battle(withDistantFriendAt: SIMD2(0.09, 0.05))
+        let near = battle(withDistantFriendAt: SIMD2(0.15, 0.55))
+        let far = battle(withDistantFriendAt: SIMD2(0.15, 0.15))
         near.tick()
         far.tick()
         #expect(near.positionsNow[0] == far.positionsNow[0])

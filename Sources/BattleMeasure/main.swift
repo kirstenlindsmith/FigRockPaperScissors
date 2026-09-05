@@ -42,7 +42,7 @@ case "battle":
     var worstDisplacement: Float = 0
     var densest = 0
     let low = battle.scale.body * 0.5
-    let high = battle.arenaSize - SIMD2(repeating: low)
+    let high = battle.arena - SIMD2(repeating: low)
     let started = nowNanoseconds()
     while !battle.census.isOver && battle.tickCount < budget {
         battle.advance(by: Battle.tickDuration)
@@ -87,7 +87,7 @@ case "battle":
             "maxdisp=" + show(worstDisplacement / battle.scale.displacementCap, 7),
             "maxdispOverCapUlps="
                 + show(
-                    (worstDisplacement - battle.scale.displacementCap) / battle.arenaSize.x.ulp, 2
+                    (worstDisplacement - battle.scale.displacementCap) / battle.coordinateUlp, 2
                 ),
             "densest=\(densest)",
         ]
@@ -204,7 +204,7 @@ case "geometry":
     let spacing = battle.spacingNow()
     let coverage = Coverage(battle)
     let scale = battle.scale
-    let arena = battle.arenaSize
+    let arena = battle.arena
     report("GEOMETRY", [
         label,
         kernelLabel,

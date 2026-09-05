@@ -20,7 +20,11 @@ import Testing
         for i in 0..<pressers {
             placing.append((SIMD2(edge + step, inset + Float(i) * step * 2), .paper))
         }
-        return hand(placing, constraintPasses: constraintPasses)
+        return Battle(
+            placing: placing,
+            aspect: Fixtures.phoneAspect,
+            constraintPasses: constraintPasses
+        )
     }
 
     static func crush(_ battle: Battle, ticks: Int = 500)
@@ -43,6 +47,56 @@ import Testing
             mean = min(mean, spacing.mean / body)
         }
         return (densest, half, closest, mean)
+    }
+
+    static func opening(_ field: [(SIMD2<Float>, Kind)], aspect: Float, within budget: Int)
+        -> (pooled: Bool, lastBreach: Int, cleanSamples: Int)
+    {
+        let battle = Battle(placing: field, aspect: aspect)
+        let body = battle.scale.body
+        var pooled = false
+        var samples = 0
+        var lastBreach = 0
+        var clean = 0
+        var run = 0
+        while !battle.census.isOver && run < budget + 4 * Gate.crowdSample {
+            battle.tick()
+            run += 1
+            guard run % Gate.crowdSample == 0 else { continue }
+            let spacing = battle.spacingNow()
+            let breached = battle.densestCell() > Gate.densestCell
+                || spacing.withinHalfBody > Gate.shareWithinHalfABody
+                || spacing.mean / body < Gate.meanNearestNeighbourInBodies
+            if samples == 0 { pooled = breached }
+            samples += 1
+            if breached {
+                lastBreach = run
+                clean = 0
+            } else {
+                clean += 1
+            }
+        }
+        return (pooled, lastBreach, clean)
+    }
+
+    @Test func aGivenPileOpensIntoTheCrowdABattleKeeps() {
+        let opened = CrowdTests.opening(
+            pileOnAPoint(300), aspect: Fixtures.phoneAspect, within: Gate.pileOpensOnAPhoneBy
+        )
+        #expect(opened.pooled)
+        #expect(opened.lastBreach <= Gate.pileOpensOnAPhoneBy)
+        #expect(opened.cleanSamples > 0)
+    }
+
+    @Test func aGivenCrowdInACornerOpensIntoTheCrowdABattleKeeps() {
+        let opened = CrowdTests.opening(
+            pileInACorner(300),
+            aspect: Fixtures.phoneAspect,
+            within: Gate.cornerPileOpensOnAPhoneBy
+        )
+        #expect(opened.pooled)
+        #expect(opened.lastBreach <= Gate.cornerPileOpensOnAPhoneBy)
+        #expect(opened.cleanSamples > 0)
     }
 
     @Test func armiesDrawnUpNeverOverlap() {
@@ -84,7 +138,7 @@ import Testing
             while !battle.census.isOver && battle.tickCount < Gate.resolutionTicks(soldiers: 600) {
                 battle.tick()
                 worstDensest = max(worstDensest, battle.densestCell())
-                if battle.tickCount % 25 == 0 {
+                if battle.tickCount % Gate.crowdSample == 0 {
                     let spacing = battle.spacingNow()
                     worstHalf = max(worstHalf, spacing.withinHalfBody)
                     worstMean = min(worstMean, spacing.mean / body)

@@ -72,5 +72,10 @@ import Testing
             #expect(battle.tickCount == min(ticks, battle.tickCount))
             #expect(battle.digest() == digest)
         }
+        let (aspect, ticks, digest) = Goldens.givenField
+        let given = Battle(placing: pileInACorner(60), aspect: aspect)
+        given.advance(by: Battle.tickDuration * ticks)
+        #expect(given.tickCount == ticks)
+        #expect(given.digest() == digest)
     }
 }

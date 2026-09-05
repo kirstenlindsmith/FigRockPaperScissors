@@ -60,7 +60,7 @@
 
     public var scale: Scale { Scale(soldiers: soldiers) }
 
-    public var arenaSize: SIMD2<Float> { arena }
+    public var coordinateUlp: Float { max(arena.x, arena.y).ulp }
 
     public convenience init(
         _ setup: Setup,
@@ -83,18 +83,16 @@
     }
 
     public convenience init(
-        _ setup: Setup,
         placing soldiers: [(SIMD2<Float>, Kind)],
+        aspect: Float,
         constraintPasses: Int = Battle.constraintPasses,
         field: Bool = true
     ) {
-        self.init(setup, constraintPasses: constraintPasses, field: field)
-        precondition(soldiers.count == self.soldiers, "placement must fill the setup")
-        for (i, soldier) in soldiers.enumerated() {
-            positions[i] = soldier.0
-            kinds[i] = soldier.1
-        }
-        recount()
+        self.init(
+            placing: soldiers,
+            aspect: aspect,
+            kernel: Kernel(constraintPasses: constraintPasses, fieldEnabled: field)
+        )
     }
 
     public func digest() -> UInt64 {

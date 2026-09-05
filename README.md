@@ -13,7 +13,8 @@ Linux aarch64 with Swift 6.1.2; an iPhone app compiles the same source.
 Four public types, declared in `Sources/BattleEngine`: `Kind` (rock, paper, scissors, and what each
 beats); `Setup` (who fights, how many, the screen's aspect, the seed, and what the setup implies —
 `arena`, `soldierDiameter`, `storageBytes`); `Census` (the per-kind counts, the victor, whether time
-can still change anything); and `Battle` (`init`, `advance(by:)`, `elapsed`, `census`,
+can still change anything); and `Battle` (two `init`s — one that scatters a `Setup`, one that fights
+a field it is handed — `arena`, `soldierDiameter`, `advance(by:)`, `elapsed`, `census`,
 `withSoldiers`). Read the declarations there; they are short, and this file does not copy them.
 
 Everything else the module exposes sits behind `@_spi(Instrumentation)`: the counters, the audits and
@@ -31,21 +32,36 @@ error to handle, however it arrived. Read the value back to see what the engine 
 that are not a `Setup` at all — truncated, missing a key, of the wrong type — are a decoding error,
 and that one the caller handles.
 
-`init` scatters the armies at random over the whole battlefield, with the three kinds mixed through
-them by the same draw; where a soldier stands is the engine's and the seed's, not the caller's. So the
-first tap builds the `Battle` — armies drawn up and waiting — and the second starts calling
-`advance`. Pausing is not calling `advance`; restarting is a new `Battle`; abandoning is releasing
-it. Speed is the app's: `Duration × Int` is exact, so speed changes the rate
-at which the battle is sampled and never the battle. The two buffers `withSoldiers` lends are the
-engine's live storage, valid for the duration of the closure and directly uploadable as instance
-data.
+`init(_ setup:)` scatters the armies at random over the whole battlefield, with the three kinds mixed
+through them by the same draw; where a soldier stands is the engine's and the seed's, not the
+caller's, unless the caller hands in the field itself. So the first tap builds the `Battle` — armies
+drawn up and waiting — and the second starts calling `advance`. Pausing is not calling `advance`;
+restarting is a new `Battle`; abandoning is releasing it. Speed is the app's: `Duration × Int` is
+exact, so speed changes the rate at which the battle is sampled and never the battle. The two buffers
+`withSoldiers` lends are the engine's live storage, valid for the duration of the closure and
+directly uploadable as instance data.
+
+`init(placing:aspect:)` takes the soldiers instead — where each stands and which kind it is — and
+fights exactly that field. The field is the army: the counts are the kinds in it, and `census` says
+what was fielded. A soldier stands where it was put, held in the same standing room the tick keeps
+every soldier in — inside the arena and clear of its walls by half a body: a coordinate outside that
+room stands on its nearest edge along that axis, and a coordinate that is not a number is not a
+place, so that soldier stands on the low edge of its axis. Read the positions back to see where the
+engine held them. The order of the field is the soldiers' identity — the same soldiers in a
+different order are a different field and may fight differently. A given battle has no seed, so the
+same field is the same battle and a rematch is a different field. A field of one kind is a battle
+already won, and a battle that is over freezes, so its pile stays a pile. A crowd handed in as a
+pile is not separated on arrival: it pushes itself apart as it fights, and a pile dense enough to be
+won before it opens stays as it stands.
 
 ## Drawing it
 
 The arena carries the screen's aspect and its area is 1: for `aspect = width/height` it is
-`√aspect × 1/√aspect`. One uniform scale — `screenHeight / setup.arena.y` — maps the battlefield
-onto the screen, fills it exactly, and cannot distort motion. Glyphs are drawn `soldierDiameter`
-across in the same units, and two glyphs touching is exactly what converts one into the other.
+`√aspect × 1/√aspect`. One uniform scale — `screenHeight / arena.y` — maps the battlefield onto the
+screen, fills it exactly, and cannot distort motion. Glyphs are drawn `soldierDiameter` across in the
+same units, and two glyphs touching is exactly what converts one into the other. A battle answers
+both numbers itself — `battle.arena` and `battle.soldierDiameter` are what a `Setup` of the same army
+on the same screen quotes — and they are what a battle built from a field is drawn from.
 
 A glyph is therefore `setup.soldierDiameter / setup.arena.y` of the screen's height — on a 19.5∶9
 portrait screen, a 51st of it at 300 soldiers and a 456th at 24 000. That is one of the four limits

@@ -376,9 +376,7 @@ extension Battle {
         let body = tuning.body
         let contact = tuning.contact
         let cap = tuning.displacementCap
-        let inset = body * 0.5
-        let low = SIMD2<Float>(repeating: inset)
-        let high = arena - low
+        let (low, high) = standingRoom
         var visited = 0
         var worst = worstSoldierVisits
         var longestRow = worstRowLength

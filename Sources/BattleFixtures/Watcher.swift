@@ -30,7 +30,7 @@ public struct Watcher {
     }
 
     public var handChangesPerSoldier: Double {
-        Double(conversions) / Double(max(1, battle.setup.count))
+        Double(conversions) / Double(max(1, battle.census.total))
     }
 
     public var meanKindLifetimeInSeconds: Double {
@@ -38,7 +38,7 @@ public struct Watcher {
     }
 
     public var surges: Int {
-        let threshold = Double(max(1, battle.setup.count)) * Watcher.surgeShareOfArmy
+        let threshold = Double(max(1, battle.census.total)) * Watcher.surgeShareOfArmy
         var count = 0
         guard let first = series.first else { return 0 }
         for k in 0..<3 {

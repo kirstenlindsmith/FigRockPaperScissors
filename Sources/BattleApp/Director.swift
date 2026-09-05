@@ -75,13 +75,13 @@ public final class Director {
         }
         let census = battle.census
         let phase: Phase = census.isOver ? .finished : (running ? .watching : .held)
-        let arena = battle.setup.arena
+        let arena = battle.arena
         let field = Field(
             arena: Size(width: Double(arena.x), height: Double(arena.y)),
-            diameter: Double(battle.setup.soldierDiameter),
+            diameter: Double(battle.soldierDiameter),
             size: layout.field)
         var soldiers: [Dot] = []
-        soldiers.reserveCapacity(battle.setup.count)
+        soldiers.reserveCapacity(census.total)
         battle.withSoldiers { positions, kinds in
             for index in positions.indices {
                 soldiers.append(

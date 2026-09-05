@@ -41,7 +41,7 @@ import Testing
         #expect(!frame.wantsFrames)
         #expect(
             abs(
-                Double(staged.setup.aspect)
+                Double(staged.arena.x / staged.arena.y)
                     - frame.layout.field.width / frame.layout.field.height) < 1e-6)
         let field = frame.layout.field
         #expect(coverage(of: spots(frame.soldiers), over: field).emptyBlocks == 0)

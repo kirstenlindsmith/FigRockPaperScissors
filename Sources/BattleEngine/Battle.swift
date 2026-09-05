@@ -1,8 +1,6 @@
 public final class Battle {
-    public let setup: Setup
-
     let tuning: Tuning
-    let arena: SIMD2<Float>
+    public let arena: SIMD2<Float>
     let soldiers: Int
 
     let gridWidth: Int
@@ -53,13 +51,32 @@ public final class Battle {
         self.init(setup, kernel: Kernel())
     }
 
-    init(_ setup: Setup, kernel: Kernel) {
-        self.setup = setup
+    public convenience init(placing soldiers: [(SIMD2<Float>, Kind)], aspect: Float) {
+        self.init(placing: soldiers, aspect: aspect, kernel: Kernel())
+    }
+
+    convenience init(_ setup: Setup, kernel: Kernel) {
+        self.init(aspect: setup.aspect, soldiers: setup.count, kernel: kernel)
+        place(setup)
+        recount()
+    }
+
+    convenience init(placing given: [(SIMD2<Float>, Kind)], aspect: Float, kernel: Kernel) {
+        self.init(aspect: aspect, soldiers: given.count, kernel: kernel)
+        let room = standingRoom
+        for i in 0..<soldiers {
+            positions[i] = given[i].0.clamped(lowerBound: room.low, upperBound: room.high)
+            kinds[i] = given[i].1
+        }
+        recount()
+    }
+
+    init(aspect: Float, soldiers count: Int, kernel: Kernel) {
         self.kernel = kernel
-        let n = setup.count
+        let n = min(count, Tuning.largestField)
         soldiers = n
         tuning = Tuning(soldiers: n)
-        arena = tuning.arena(aspect: setup.aspect)
+        arena = tuning.arena(aspect: aspect)
 
         let storage = Storage(tuning: tuning, arena: arena)
         gridWidth = storage.gridWidth
@@ -88,10 +105,14 @@ public final class Battle {
         neighbourDelta = storage.neighbourDelta.allocate(.zero)
         neighbourDistance = storage.neighbourDistance.allocate(0)
         neighbourIndex = storage.neighbourIndex.allocate(0)
-
-        place()
-        recount()
     }
+
+    var standingRoom: (low: SIMD2<Float>, high: SIMD2<Float>) {
+        let inset = SIMD2<Float>(repeating: tuning.body * 0.5)
+        return (inset, arena - inset)
+    }
+
+    public var soldierDiameter: Float { tuning.contact }
 
     deinit {
         positions.deallocate()

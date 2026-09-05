@@ -29,6 +29,9 @@ struct Tuning {
     static let coincidenceSquared: Float = 1e-20
 
     static let largestArmy = Int(Int32.max) / (Kind.allCases.count * maxCellsPerSoldier)
+    static let largestField = largestArmy * Kind.allCases.count
+
+    static func aspect(from value: Float) -> Float { value.isFinite && value > 0 ? value : 1 }
 
     let soldiers: Int
     let spacing: Float
@@ -59,7 +62,7 @@ struct Tuning {
     func arena(aspect: Float) -> SIMD2<Float> {
         let floor = arenaShortSideFloor
         let widest = 1 / (floor * floor)
-        let a = min(max(aspect, 1 / widest), widest)
+        let a = min(max(Tuning.aspect(from: aspect), 1 / widest), widest)
         let w = a.squareRoot()
         return SIMD2(w, 1 / w)
     }

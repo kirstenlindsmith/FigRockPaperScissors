@@ -20,7 +20,7 @@ import Testing
         armies: Armies, soldiers: Int, aspect: Float
     ) {
         let battle = Battle(Fixtures.setup(armies, soldiers: soldiers, seed: 3, aspect: aspect))
-        let cap = battle.scale.displacementCap + Gate.coordinateRoundings * battle.arenaSize.x.ulp
+        let cap = battle.scale.displacementCap + Gate.coordinateRoundings * battle.coordinateUlp
         var previous = battle.positionsNow
         var worst: Float = 0
         var ticks = 0
@@ -42,25 +42,50 @@ import Testing
         #expect(worst > 0)
     }
 
-    @Test(arguments: [1, 8])
-    func nothingComesOutOfAPileFasterThanTheCap(perKind: Int) {
-        let battle = stacked(perKind: perKind)
-        let cap = battle.scale.displacementCap
-        let rounding = Gate.coordinateRoundings * battle.arenaSize.x.ulp
-        var previous = battle.positionsNow
-        var worst: Float = 0
-        for _ in 0..<6 {
-            battle.tick()
-            let now = battle.positionsNow
-            for i in 0..<now.count {
-                let moved = now[i] - previous[i]
-                let travelled = (moved.x * moved.x + moved.y * moved.y).squareRoot()
-                #expect(travelled <= cap + rounding)
-                worst = max(worst, travelled)
+    @Test(arguments: screens)
+    func aBattleFoughtFromAGivenFieldStaysInsideTheArenaAndNeverLeaps(aspect: Float) {
+        let fields = [
+            wildField(aspect: aspect),
+            pileOnAPoint(60, aspect: aspect),
+            pileInACorner(60),
+        ]
+        for field in fields {
+            let battle = Battle(placing: field, aspect: aspect)
+            let cap = battle.scale.displacementCap
+            let allowance = Gate.coordinateRoundings * battle.coordinateUlp
+            var outside = 0
+            var nonFinite = 0
+            var leaps = 0
+            var worst: Float = 0
+            var previous = battle.positionsNow
+            func inspect(_ now: [SIMD2<Float>]) {
+                for i in 0..<now.count {
+                    if !now[i].x.isFinite || !now[i].y.isFinite { nonFinite += 1 }
+                    if now[i].x < battle.insetLow.x || now[i].x > battle.insetHigh.x
+                        || now[i].y < battle.insetLow.y || now[i].y > battle.insetHigh.y {
+                        outside += 1
+                    }
+                    let moved = now[i] - previous[i]
+                    let travelled = (moved.x * moved.x + moved.y * moved.y).squareRoot()
+                    if travelled > cap + allowance { leaps += 1 }
+                    worst = max(worst, travelled)
+                }
             }
-            previous = now
+            inspect(previous)
+            var ticks = 0
+            while !battle.census.isOver && ticks < 200 {
+                battle.tick()
+                ticks += 1
+                let now = battle.positionsNow
+                inspect(now)
+                previous = now
+            }
+            #expect(outside == 0)
+            #expect(nonFinite == 0)
+            #expect(leaps == 0)
+            #expect(worst >= cap - allowance)
+            #expect(ticks > 0)
         }
-        #expect(worst >= cap - rounding)
     }
 
     @Test func lengthsHoldEachOtherApart() {
@@ -120,7 +145,7 @@ import Testing
 
     @Test func soldierIdentityIsStable() {
         let battle = Battle(Fixtures.setup(.even, soldiers: 300, seed: 15))
-        let cap = battle.scale.displacementCap + Gate.coordinateRoundings * battle.arenaSize.x.ulp
+        let cap = battle.scale.displacementCap + Gate.coordinateRoundings * battle.coordinateUlp
         var previous = battle.positionsNow
         for _ in 0..<300 {
             battle.tick()
@@ -134,13 +159,9 @@ import Testing
     }
 
     @Test func aSoldierMovesAtTheSpeedTheRuleGivesIt() {
-        let scale = Scale(soldiers: 3)
-        let middle = SIMD2<Float>(0.7, 0.34)
-        let chase = hand([
-            (middle, .rock),
-            (middle + SIMD2(1.5 * scale.spacing, 0), .scissors),
-            (middle + SIMD2(0, 3 * scale.spacing), .paper),
-        ])
+        let chase = chooser(prey: SIMD2(1.5, 0), predator: SIMD2(0, 3))
+        let scale = chase.scale
+        let middle = chase.arena * 0.5
         chase.tick()
         let stepped = chase.positionsNow[0] - middle
         #expect(abs((stepped.x * stepped.x + stepped.y * stepped.y).squareRoot() - scale.chaseStep) < 1e-6)

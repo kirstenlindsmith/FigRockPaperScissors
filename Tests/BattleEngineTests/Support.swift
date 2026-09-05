@@ -26,8 +26,10 @@ extension Battle {
     var kindsNow: [Kind] { withSoldiers { _, k in Array(k) } }
 
     var insetLow: SIMD2<Float> { SIMD2(repeating: scale.body * 0.5) }
-    var insetHigh: SIMD2<Float> { arenaSize - insetLow }
+    var insetHigh: SIMD2<Float> { arena - insetLow }
 }
+
+let screens: [Float] = [0.36, 0.46, 1, 19.5 / 9, 32, 1e-30, 1e30]
 
 func wins(soldiers: Int, seeds: Int, shuffledFill: Bool = true) -> [Int] {
     var wins = [0, 0, 0]
@@ -44,21 +46,9 @@ func wins(soldiers: Int, seeds: Int, shuffledFill: Bool = true) -> [Int] {
 
 func hand(
     _ soldiers: [(SIMD2<Float>, Kind)],
-    aspect: Float = Fixtures.phoneAspect,
-    seed: UInt64 = 1,
-    constraintPasses: Int = Battle.constraintPasses,
-    field: Bool = true
+    aspect: Float = Fixtures.phoneAspect
 ) -> Battle {
-    var counts = [0, 0, 0]
-    for soldier in soldiers { counts[Int(soldier.1.rawValue)] += 1 }
-    let setup = Setup(
-        aspect: aspect,
-        seed: seed,
-        rock: counts[0],
-        paper: counts[1],
-        scissors: counts[2]
-    )
-    return Battle(setup, placing: soldiers, constraintPasses: constraintPasses, field: field)
+    Battle(placing: soldiers, aspect: aspect)
 }
 
 func clumped(_ flock: Int, apart step: Float, around centre: SIMD2<Float>) -> [SIMD2<Float>] {
@@ -77,7 +67,7 @@ func hunterSeeing(_ crowd: Int, spacingsAway away: Float, field: Bool = true) ->
     let centre = SIMD2<Float>(arena.x * 0.25, arena.y * 0.5)
     var placing = clumped(crowd, apart: 0.5 * scale.spacing, around: centre).map { ($0, Kind.rock) }
     placing.append((centre + SIMD2(away * scale.spacing, 0), .paper))
-    return hand(placing, field: field)
+    return Battle(placing: placing, aspect: Fixtures.phoneAspect, field: field)
 }
 
 func pile(flock: Int, intruderAt intruder: Int) -> Battle {
@@ -96,9 +86,53 @@ func pileSeenFrom(spacingsAway away: Float, flock: Int) -> Battle {
     return hand(placing)
 }
 
-func stacked(perKind: Int) -> Battle {
-    let point = SIMD2<Float>(0.6, 0.34)
-    return hand((0..<(3 * perKind)).map { (point, Kind.allCases[$0 % 3]) })
+func arena(soldiers: Int, aspect: Float) -> SIMD2<Float> {
+    Fixtures.setup(.even, soldiers: soldiers, seed: 1, aspect: aspect).arena
+}
+
+func pileOnAPoint(_ soldiers: Int, aspect: Float = Fixtures.phoneAspect)
+    -> [(SIMD2<Float>, Kind)]
+{
+    let middle = arena(soldiers: soldiers, aspect: aspect) * 0.5
+    return (0..<soldiers).map { (middle, Kind.allCases[$0 % 3]) }
+}
+
+func pileInACorner(_ soldiers: Int) -> [(SIMD2<Float>, Kind)] {
+    (0..<soldiers).map { (SIMD2<Float>.zero, Kind.allCases[$0 % 3]) }
+}
+
+func wildField(aspect: Float = Fixtures.phoneAspect) -> [(SIMD2<Float>, Kind)] {
+    let arena = arena(soldiers: 14, aspect: aspect)
+    let spots: [SIMD2<Float>] = [
+        SIMD2(.nan, .nan),
+        SIMD2(.infinity, .infinity),
+        SIMD2(-.infinity, -.infinity),
+        SIMD2(.nan, arena.y * 0.5),
+        SIMD2(arena.x * 0.5, -.infinity),
+        SIMD2(1e30, 1e30),
+        SIMD2(-1e30, 1e-30),
+        SIMD2(1e10, 1e10),
+        SIMD2(-1, -1),
+        SIMD2(arena.x * 3, arena.y * 0.5),
+        .zero,
+        arena,
+        SIMD2(-0.0, 0.0),
+        arena * 0.5,
+    ]
+    return spots.enumerated().map { ($0.element, Kind.allCases[$0.offset % 3]) }
+}
+
+func chooser(prey: SIMD2<Float>, predator: SIMD2<Float>) -> Battle {
+    let soldiers = 200
+    let scale = Scale(soldiers: soldiers)
+    let middle = arena(soldiers: soldiers, aspect: Fixtures.phoneAspect) * 0.5
+    var placing: [(SIMD2<Float>, Kind)] = [
+        (middle, .rock),
+        (middle + prey * scale.spacing, .scissors),
+        (middle + predator * scale.spacing, .paper),
+    ]
+    for _ in 3..<soldiers { placing.append((SIMD2(repeating: scale.body), .rock)) }
+    return hand(placing)
 }
 
 func pairFacing(

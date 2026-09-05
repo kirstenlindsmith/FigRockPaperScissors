@@ -4,9 +4,7 @@ import Testing
 @_spi(Instrumentation) import BattleEngine
 
 @Suite struct PlacementTests {
-    static let aspects: [Float] = [0.36, 0.46, 1, 19.5 / 9, 32, 1e-30, 1e30]
-
-    @Test(arguments: aspects)
+    @Test(arguments: screens)
     func everySoldierStandsInsideTheArenaOnALatticeWiderThanABody(aspect: Float) {
         for soldiers in [3, 60, 1500] {
             for seed in UInt64(4)...5 {
@@ -25,12 +23,13 @@ import Testing
         }
     }
 
-    @Test(arguments: aspects)
+    @Test(arguments: screens)
     func theArmyCoversTheFieldWhereAClumpOfItCouldNot(aspect: Float) {
         for soldiers in [300, 1500] {
             let setup = Fixtures.setup(.even, soldiers: soldiers, seed: 1, aspect: aspect)
-            let scale = Scale(soldiers: soldiers)
-            let spots = clumped(soldiers, apart: 0.5 * scale.spacing, around: setup.arena * 0.5)
+            let across = Float(soldiers).squareRoot().rounded(.up)
+            let step = 0.1 * min(setup.arena.x, setup.arena.y) / across
+            let spots = clumped(soldiers, apart: step, around: setup.arena * 0.5)
             let bunched = hand(
                 spots.enumerated().map { ($0.element, Kind.allCases[$0.offset % 3]) },
                 aspect: aspect

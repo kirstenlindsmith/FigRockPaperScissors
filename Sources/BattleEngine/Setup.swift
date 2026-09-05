@@ -6,7 +6,7 @@ public struct Setup: Sendable, Equatable, Codable {
 
     public var aspect: Float {
         get { storedAspect }
-        set { storedAspect = Setup.aspect(from: newValue) }
+        set { storedAspect = Tuning.aspect(from: newValue) }
     }
 
     public var seed: UInt64
@@ -27,7 +27,7 @@ public struct Setup: Sendable, Equatable, Codable {
     }
 
     public init(aspect: Float, seed: UInt64, rock: Int, paper: Int, scissors: Int) {
-        storedAspect = Setup.aspect(from: aspect)
+        storedAspect = Tuning.aspect(from: aspect)
         self.seed = seed
         storedRock = Setup.count(from: rock)
         storedPaper = Setup.count(from: paper)
@@ -62,17 +62,13 @@ public struct Setup: Sendable, Equatable, Codable {
         return Storage(tuning: tuning, arena: tuning.arena(aspect: storedAspect)).bytes
     }
 
-    private static func aspect(from value: Float) -> Float {
-        value.isFinite && value > 0 ? value : 1
-    }
-
     private static func count(from value: Int) -> Int { min(max(0, value), Tuning.largestArmy) }
 
     private enum CodingKeys: String, CodingKey { case aspect, seed, rock, paper, scissors }
 
     public init(from decoder: any Decoder) throws {
         let box = try decoder.container(keyedBy: CodingKeys.self)
-        storedAspect = Setup.aspect(from: try box.decode(Float.self, forKey: .aspect))
+        storedAspect = Tuning.aspect(from: try box.decode(Float.self, forKey: .aspect))
         seed = try box.decode(UInt64.self, forKey: .seed)
         storedRock = Setup.count(from: try box.decode(Int.self, forKey: .rock))
         storedPaper = Setup.count(from: try box.decode(Int.self, forKey: .paper))

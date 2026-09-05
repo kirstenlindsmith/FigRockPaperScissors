@@ -31,7 +31,7 @@ public struct Coverage: Sendable {
     }
 
     public init(_ battle: Battle) {
-        let arena = battle.setup.arena
+        let arena = battle.arena
         self.init(
             spots: battle.withSoldiers { positions, _ in
                 positions.map { SIMD2(Double($0.x), Double($0.y)) }

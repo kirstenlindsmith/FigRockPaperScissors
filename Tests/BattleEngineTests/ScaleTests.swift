@@ -63,6 +63,47 @@ struct ScaleTests {
         #expect(battle.longestSearchedRow <= Battle.candidateCap)
     }
 
+    @Test(arguments: screens)
+    func aGivenPileOpensOnEveryScreenTheSurfaceAdmits(aspect: Float) {
+        let opened = CrowdTests.opening(
+            pileOnAPoint(300, aspect: aspect),
+            aspect: aspect,
+            within: Gate.pileOpensOnAnyScreenBy
+        )
+        #expect(opened.pooled)
+        #expect(opened.lastBreach <= Gate.pileOpensOnAnyScreenBy)
+        #expect(opened.cleanSamples > 0)
+    }
+
+    @Test(arguments: screens)
+    func aGivenCrowdInACornerOpensOnEveryScreenTheSurfaceAdmits(aspect: Float) {
+        let opened = CrowdTests.opening(
+            pileInACorner(300),
+            aspect: aspect,
+            within: Gate.cornerPileOpensOnAnyScreenBy
+        )
+        #expect(opened.pooled)
+        #expect(opened.lastBreach <= Gate.cornerPileOpensOnAnyScreenBy)
+        #expect(opened.cleanSamples > 0)
+    }
+
+    @Test func aGivenCrowdTenTimesDenserStillOpens() {
+        let point = CrowdTests.opening(
+            pileOnAPoint(3_000), aspect: Fixtures.phoneAspect, within: Gate.pileOpensOnAnyScreenBy
+        )
+        #expect(point.pooled)
+        #expect(point.lastBreach <= Gate.pileOpensOnAnyScreenBy)
+        #expect(point.cleanSamples > 0)
+        let corner = CrowdTests.opening(
+            pileInACorner(3_000),
+            aspect: Fixtures.phoneAspect,
+            within: Gate.cornerPileOpensOnAnyScreenBy
+        )
+        #expect(corner.pooled)
+        #expect(corner.lastBreach <= Gate.cornerPileOpensOnAnyScreenBy)
+        #expect(corner.cleanSamples > 0)
+    }
+
     @Test func aCrowdWithoutTheSolvePools() {
         var densest = 0
         var half = 0.0

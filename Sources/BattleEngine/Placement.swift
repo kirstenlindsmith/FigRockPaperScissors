@@ -17,7 +17,7 @@ struct Random {
 }
 
 extension Battle {
-    func place() {
+    func place(_ setup: Setup) {
         guard soldiers > 0 else { return }
         var rng = Random(seed: setup.seed)
 

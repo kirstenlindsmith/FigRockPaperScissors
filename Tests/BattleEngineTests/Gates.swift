@@ -3,6 +3,12 @@
 enum Gate {
     static let coordinateRoundings: Float = 4
 
+    static let crowdSample = 25
+    static let pileOpensOnAPhoneBy = 250
+    static let cornerPileOpensOnAPhoneBy = 1_000
+    static let pileOpensOnAnyScreenBy = 2_000
+    static let cornerPileOpensOnAnyScreenBy = 6_000
+
     static let densestCell = 64
     static let shareWithinHalfABody = 0.01
     static let meanNearestNeighbourInBodies: Float = 0.9
